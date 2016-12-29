@@ -1,0 +1,32 @@
+body {
+    background-color: #efeeec;
+}
+
+table.vehicles {
+    width: 20%;
+    padding: 5px;
+    background-color:white;
+    font: 15px arial, sans-serif; color: white
+}
+
+table.vehicles tr:hover td { background-color: black; }
+table.vehicles tr.super_unicum { background-color: #8225ad; }
+table.vehicles tr.unicum { background-color: #c64cff; }
+table.vehicles tr.great { background-color: #00a0b8; }
+table.vehicles tr.very_good { background-color: #2ae4ff; }
+table.vehicles tr.good { background-color: #459300; }
+table.vehicles tr.above_average { background-color: #77e812; }
+table.vehicles tr.average { background-color: #e6df27; }
+table.vehicles tr.below_average { background-color: #ff8a00; }
+table.vehicles tr.bad { background-color: #f11919; }
+table.vehicles tr.very_bad { background-color: #000000; }
+
+table.clan_skirmishes {
+    width: 20%;
+    padding: 5px;
+    font: 15px arial, sans-serif; color: black;
+    text-align: center
+}
+table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
+table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
+

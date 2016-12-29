@@ -1,0 +1,21 @@
+@(tanks: List[com.domain.presentation.model.TankStats])
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tanks: @tanks.size</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+</head>
+<body>
+
+<table class="vehicles">
+    @for(tank <- tanks) {
+    <tr class="@tank.color">
+        <td>@tank.name</td>
+        <td>@tank.wn8</td>
+        <td>@tank.battles</td>
+    </tr>
+    }
+</table>
+
+</body>
