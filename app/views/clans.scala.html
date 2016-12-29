@@ -9,16 +9,33 @@
 <body>
 
 <table class="clan_skirmishes" cellpadding="0" cellspacing="0">
-    <thead><td></td><td></td><td></td><td colspan="3">Skirmish Total</td></thead>
-    <thead><td></td><td>Clan</td><td>Members</td><td>Battles</td><td>Wins</td><td>%</td></thead>
+    <thead><td></td><td></td><td></td><td colspan="3">Skirmish Delta</td><td colspan="3">Skirmish Total</td></thead>
+    <thead><td></td><td>Clan</td><td>Members</td><td>Battles</td><td>Wins</td><td>%</td><td>Battles</td><td>Wins</td><td>%</td></thead>
     @for(clan <- clans) {
     <tr class="hoverable">
         <td><img src="@clan.emblem"></td>
         <td class="clan_tag">@clan.tag</td>
-        <td>@clan.membersCount</td>
+        @if(clan.clanDelta.isDefined && clan.clanDelta.get.membersCount != 0) {
+
+            @if(clan.clanDelta.get.membersCount > 0) {
+                <td>@clan.membersCount <span class="positive">(+@clan.clanDelta.get.membersCount)</span></td>
+            } else {
+                <td>@clan.membersCount <span class="negative">(@clan.clanDelta.get.membersCount)</span></td>
+            }
+
+        } else {
+         <td>@clan.membersCount</td>
+        }
+        @if(clan.clanDelta.isDefined) {
+         <td>@clan.clanDelta.get.skirmishBattles</td>
+         <td>@clan.clanDelta.get.skirmishBattlesWins</td>
+         <td class="@com.domain.presentation.model.ColorHelper.skirmishWinRatio(clan.clanDelta.get.winRatio)">@clan.clanDelta.get.winRatio.toInt%</td>
+        } else {
+         <td>-</td><td>-</td><td>-</td>
+        }
         <td>@clan.skirmishBattles</td>
         <td>@clan.skirmishBattlesWins</td>
-        <td>@clan.totalWinRatio%</td>
+        <td class="@com.domain.presentation.model.ColorHelper.skirmishWinRatio(clan.totalWinRatio)">@clan.totalWinRatio.toInt%</td>
     </tr>
     }
 </table>

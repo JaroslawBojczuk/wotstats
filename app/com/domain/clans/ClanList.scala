@@ -1,9 +1,7 @@
 package com.domain.clans
 
-import java.io.File
-
 import com.domain.Constans
-import com.domain.presentation.model.ClanSummary
+import com.domain.presentation.model.{ClanDelta, ClanSummary}
 import play.libs.Json
 
 import scala.collection.JavaConverters._
@@ -15,7 +13,7 @@ object ClanList {
   private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/info/?application_id=${Constans.APPLICATION_ID}&clan_id=$clanIds"
   private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constans.APPLICATION_ID}&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
 
-  def topClans: Seq[ClanSummary] = {
+  def topClansCurrentStats: Seq[ClanSummary] = {
 
     val clansResponse = scala.io.Source.fromURL(url).mkString
     val clansJson = Json.parse(clansResponse)
@@ -46,6 +44,28 @@ object ClanList {
 
   }
 
+  def previousStats: Seq[ClanSummary] = {
+
+    val filename = "E:\\Project\\last.txt"
+    val clanStats = scala.io.Source.fromFile(filename).getLines
+
+    clanStats.map(line => {
+      val values = line.split(",")
+      ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
+    }).toSeq
+  }
+
+  def previousStats2: Seq[ClanSummary] = {
+
+    val filename = "E:\\Project\\29122016.txt"
+    val clanStats = scala.io.Source.fromFile(filename).getLines
+
+    clanStats.map(line => {
+      val values = line.split(",")
+      ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
+    }).toSeq
+  }
+
   def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
@@ -53,9 +73,18 @@ object ClanList {
 
   def main(args: Array[String]): Unit = {
 
-    printToFile(new File("E:\\Project\\29122016v2.txt")) { p =>
-      topClans.sortBy(_.clanId).foreach(clan => p.println(s"${clan.clanId},${clan.membersCount},${clan.skirmishBattles},${clan.skirmishBattlesWins}"))
-    }
+    val previous = previousStats
+    val current = previousStats2
+
+    current.map(cur => {
+      val prevOpt = previous.find(_.clanId == cur.clanId)
+      val clanDelta = prevOpt match {
+        case Some(prev) => Some(ClanDelta(cur.membersCount - prev.membersCount, cur.skirmishBattles - prev.skirmishBattles, cur.skirmishBattlesWins - prev.skirmishBattlesWins))
+        case _ => None
+      }
+      ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmishBattles, cur.skirmishBattles, clanDelta)
+    })
+
 
   }
 

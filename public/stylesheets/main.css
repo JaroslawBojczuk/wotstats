@@ -22,7 +22,7 @@ table.vehicles tr.bad { background-color: #f11919; }
 table.vehicles tr.very_bad { background-color: #000000; }
 
 table.clan_skirmishes {
-    width: 20%;
+    width: 60%;
     padding: 5px;
     font: 15px arial, sans-serif; color: black;
     text-align: center
@@ -30,3 +30,20 @@ table.clan_skirmishes {
 table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
 table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
 
+table.clan_skirmishes td.super_unicum { font-weight: bold; color: #8225ad; }
+table.clan_skirmishes td.unicum { font-weight: bold; color: #c64cff; }
+table.clan_skirmishes td.great { font-weight: bold; color: #00a0b8; }
+table.clan_skirmishes td.very_good { font-weight: bold; color: #2ae4ff; }
+table.clan_skirmishes td.good { font-weight: bold; color: #459300; }
+table.clan_skirmishes td.above_average { font-weight: bold; color: #77e812; }
+table.clan_skirmishes td.average { font-weight: bold; color: #e6df27; }
+table.clan_skirmishes td.below_average { font-weight: bold; color: #ff8a00; }
+table.clan_skirmishes td.bad { font-weight: bold; color: #f11919; }
+table.clan_skirmishes td.very_bad { font-weight: bold; color: #000000; }
+
+.positive {
+    color: green
+}
+.negative {
+    color: red
+}
