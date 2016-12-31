@@ -1,5 +1,7 @@
 package com.domain.clans
 
+import java.io.File
+
 import com.domain.Constans
 import com.domain.presentation.model.{ClanDelta, ClanSummary}
 import play.libs.Json
@@ -51,12 +53,17 @@ object ClanList {
   def previousStats: Seq[ClanSummary] = {
 
     val filename = "E:\\Project\\last.txt"
-    val clanStats = scala.io.Source.fromFile(filename).getLines
+    val file = scala.io.Source.fromFile(filename)
+    val clanStats = file.getLines
 
-    clanStats.map(line => {
+    val result = clanStats.map(line => {
       val values = line.split(",")
       ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
     }).toSeq
+
+    file.close()
+
+    result
   }
 
   def previousStats2: Seq[ClanSummary] = {
@@ -68,11 +75,6 @@ object ClanList {
       val values = line.split(",")
       ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
     }).toSeq
-  }
-
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
-    try { op(p) } finally { p.close() }
   }
 
   def main(args: Array[String]): Unit = {
