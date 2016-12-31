@@ -14,7 +14,8 @@ object ClanUtils {
 
   def saveCurrentClansInFile = {
     val current = ClanList.topClansCurrentStats
-    val file = new File(s"E:\\Project\\${System.currentTimeMillis()}.txt")
+    val file = new File(s"E:\\Project\\last.txt")
+    //val file = new File(s"E:\\Project\\${System.currentTimeMillis()}.txt")
     file.createNewFile()
     printToFile(file) { p =>
       current.foreach(clan => {

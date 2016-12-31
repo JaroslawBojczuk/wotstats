@@ -11,7 +11,7 @@ class ClanUtilsController @Inject() extends Controller {
   def refresh = Action { implicit request =>
 
     ClanUtils.saveCurrentClansInFile
-    Ok("File saved")
+    Ok(views.html.success())
 
   }
 }

@@ -1,7 +1,5 @@
 package com.domain.clans
 
-import java.io.File
-
 import com.domain.Constans
 import com.domain.presentation.model.{ClanDelta, ClanSummary}
 import play.libs.Json
@@ -60,6 +58,8 @@ object ClanList {
       val values = line.split(",")
       ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
     }).toSeq
+
+    result.size
 
     file.close()
 
