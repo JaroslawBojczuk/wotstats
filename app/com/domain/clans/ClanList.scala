@@ -5,6 +5,7 @@ import com.domain.presentation.model.{ClanDelta, ClanSummary}
 import play.libs.Json
 
 import scala.collection.JavaConverters._
+import scala.concurrent.Future
 
 object ClanList {
 
@@ -43,6 +44,9 @@ object ClanList {
     }).toSeq
 
   }
+
+  import scala.concurrent.ExecutionContext.Implicits.global
+  def topClansCurrentStatsFuture = Future { topClansCurrentStats }
 
   def previousStats: Seq[ClanSummary] = {
 
