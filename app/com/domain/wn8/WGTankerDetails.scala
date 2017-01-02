@@ -1,13 +1,13 @@
 package com.domain.wn8
 
-import com.domain.Constans
+import com.domain.Constants
 import com.domain.presentation.model.TankerDetails
 import com.fasterxml.jackson.databind.JsonNode
 import play.libs.Json
 
 object WGTankerDetails {
 
-  private def url(accountId: String) = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constans.APPLICATION_ID}&account_id=$accountId"
+  private def url(accountId: String) = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId"
 
   def getDetails(accountId: String): TankerDetails = {
     val userResponse = scala.io.Source.fromURL(url(accountId)).mkString

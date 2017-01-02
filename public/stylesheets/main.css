@@ -1,7 +1,3 @@
-body {
-    background-color: #efeeec;
-}
-
 table.vehicles {
     width: 20%;
     padding: 5px;
@@ -24,8 +20,7 @@ table.vehicles tr.very_bad { background-color: #000000; }
 table.clan_skirmishes {
     width: 60%;
     padding: 5px;
-    font: 15px arial, sans-serif; color: black;
-    text-align: center
+    text-align: center;
 }
 table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
 table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
@@ -48,9 +43,14 @@ table.clan_skirmishes td.very_bad { font-weight: bold; color: #000000; }
     color: red
 }
 
+a:link {color:black; background-color:transparent; text-decoration:none}
+a:visited {color:black; background-color:transparent; text-decoration:none}
+a:hover   {color:red; background-color:transparent; text-decoration:none}
+a:active  {color:black; background-color:transparent; text-decoration:none}
 
 /* The body, gives an example how the background should look like */
 body {
+    font: 15px arial, sans-serif; color: black;
     #background: #063d4c;
     -webkit-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
     -moz-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
@@ -83,7 +83,7 @@ body {
 }
 /* Again, #content is only there to center the menu */
 #content {
-	text-align: center;
+	text-align: left;
 	width: 100%;
 	#height: 100%;}
 /* Here you go: This is what you need to get this menu */

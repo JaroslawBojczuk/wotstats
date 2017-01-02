@@ -1,6 +1,6 @@
 package com.domain.clans
 
-import com.domain.Constans
+import com.domain.Constants
 import com.domain.presentation.model.{ClanDelta, ClanSummary}
 import play.libs.Json
 
@@ -9,10 +9,9 @@ import scala.concurrent.Future
 
 object ClanList {
 
-  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constans.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=100"
-
-  private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/info/?application_id=${Constans.APPLICATION_ID}&clan_id=$clanIds"
-  private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constans.APPLICATION_ID}&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
+  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constants.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=100"
+  private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/info/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanIds"
+  private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
 
   def topClansCurrentStats: Seq[ClanSummary] = {
 
@@ -50,7 +49,7 @@ object ClanList {
 
   def previousStats: Seq[ClanSummary] = {
 
-    val filename = "E:\\Project\\last.txt"
+    val filename = "C:\\Projects\\last.txt"
     val file = scala.io.Source.fromFile(filename)
     val clanStats = file.getLines
 
