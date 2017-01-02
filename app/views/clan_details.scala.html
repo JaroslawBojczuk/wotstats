@@ -3,13 +3,13 @@
 @main(clan.tag) {
 <table>
     <tr>
-        <td align="right">Clan:</td><td>@clan.name</td
+        <td align="right">Clan:</td><td>@clan.name</td>
     </tr>
     <tr>
         <td align="right">Members:</td><td>@clan.members.size</td>
     </tr>
     @for(member <- clan.members) {
-    <tr><td></td><td><a href="@routes.TankerDetailsController.details(member.accountId.toString)">@member.name</a></td></tr>
+    <tr><td></td><td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td></tr>
     }
 </table>
 }

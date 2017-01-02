@@ -1,8 +1,7 @@
 package controllers
 
 import javax.inject._
-
-import com.domain.wn8.WGTankerDetails
+import com.domain.user.WGTankerDetails
 import play.api.mvc._
 
 @Singleton

@@ -28,7 +28,11 @@ class ClanListController @Inject() extends Controller {
       }).sortBy(clan => {
         val delta = clan.clanDelta
         if (delta.isDefined) {
-          -delta.get.skirmishBattles
+          if(delta.get.skirmishBattles > 0) {
+            -(delta.get.skirmishBattles * 100) // clan with battles go on top
+          } else {
+            -clan.totalWinRatio
+          }
         } else {
           0
         }

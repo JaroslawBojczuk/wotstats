@@ -1,31 +1,16 @@
 package com.domain.wn8
 
-import java.nio.file.{Files, Paths}
-
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
-import scala.collection.JavaConverters._
 
 
 object Wn8Veh {
 
-  case class Vehicle(IDNum: Int, frag: Double, dmg: Double, spot: Double, defence: Double, win: Double)
-
   def calculate(account_id: String): List[(String, Double, Int, Double)] = {
     println("Starting")
 
-    val csvStart = System.currentTimeMillis()
-    val path = Paths.get("E:\\Project\\expected_tank_values_29.csv")
-
-    val tanks: Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
-      val tank = line.split(",")
-      tank(0) match {
-        case "tankid" => (0, Vehicle(0, 1, 1, 1, 1, 1))
-        case _ => (tank(0).toInt, Vehicle(tank(0).toInt, tank(1).toDouble, tank(2).toDouble, tank(3).toDouble, tank(4).toDouble, tank(5).toDouble))
-      }
-    }).toMap
-    val csvEnd = System.currentTimeMillis()
+    val tanks: Map[Int, Vehicle] = UserWn8.tanksExpectedValues()
 
     val application_id: String = "c0a88d6d3b5657d6750bd219d55fb550"
 
@@ -92,7 +77,7 @@ object Wn8Veh {
 
         val WN8 = 980 * rDAMAGEc + 210 * rDAMAGEc * rFRAGc + 155 * rFRAGc * rSPOTc + 75 * rDEFc * rFRAGc + 145 * Math.min(1.8, rWINc)
 
-        val humanWN8 = BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+        val humanWN8: Double = BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
         Some((tankName, humanWN8, battles.toInt, avg_frags))
       } else {

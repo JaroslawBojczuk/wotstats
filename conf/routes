@@ -6,7 +6,7 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 GET     /tanks/:accountId           controllers.HomeController.tanks(accountId)
-GET     /tanker/:accountId          controllers.TankerDetailsController.details(accountId)
+GET     /tanker/:accountName        controllers.TankerDetailsController.details(accountName)
 GET     /clans                      controllers.ClanListController.list
 GET     /clans/refresh              controllers.ClanUtilsController.refresh
 GET     /clans/:clanId              controllers.ClanDetailsController.details(clanId)

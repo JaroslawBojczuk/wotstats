@@ -1,8 +1,13 @@
-@(tanker: com.domain.presentation.model.TankerDetails)
+@(tanker: Option[com.domain.presentation.model.TankerDetails])
 @()
 
 @main("Welcome to Play") {
-Battles: @tanker.battles
-Win ratio: @tanker.winratio
-Skirmishes: @tanker.battlesSkirmish
+@if(tanker.isDefined) {
+Battles: @tanker.get.battles
+Win ratio: @tanker.get.winratio
+Skirmishes: @tanker.get.battlesSkirmish
+Wn8: @tanker.get.wn8
+} else {
+Not found
+}
 }
