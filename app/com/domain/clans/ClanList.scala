@@ -49,8 +49,7 @@ object ClanList {
 
   def previousStats: Seq[ClanSummary] = {
 
-    val filename = "C:\\Projects\\last.txt"
-    val file = scala.io.Source.fromFile(filename)
+    val file = scala.io.Source.fromFile(ClanUtils.FILE_WITH_LAST_CLAN_STATS)
     val clanStats = file.getLines
 
     val result = clanStats.map(line => {

@@ -8,6 +8,9 @@
     <tr>
         <td align="right">Members:</td><td>@clan.members.size</td>
     </tr>
+    <tr>
+        <td align="right">Average WN8:</td><td>@clan.averageWn8</td>
+    </tr>
     @for(member <- clan.members) {
     <tr><td></td><td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td></tr>
     }

@@ -33,7 +33,7 @@ object WGTankerDetails {
         val statisticsSkirmish: JsonNode = data.findPath("statistics").findPath("stronghold_skirmish")
         val battlesSkirmish = statisticsSkirmish.findPath("battles").asInt()
 
-        Some(TankerDetails(name, battles, wins, battlesSkirmish, com.domain.wn8.UserWn8.accountWn8(accountId)))
+        Some(TankerDetails(name, battles, wins, battlesSkirmish, com.domain.wn8.UserWn8.accountWn8(accountId).wn8))
       case _ => None
     }
   }

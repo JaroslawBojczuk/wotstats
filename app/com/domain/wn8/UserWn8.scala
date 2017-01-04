@@ -3,14 +3,18 @@ package com.domain.wn8
 import java.nio.file.{Files, Path, Paths}
 
 import com.domain.Constants
+import com.domain.clans.ClanUtils
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import play.api.Logger
 
 import scala.collection.JavaConverters._
+import scala.collection.parallel.{ForkJoinTaskSupport, ParSeq}
+import scala.concurrent.forkjoin.ForkJoinPool
 
 object UserWn8 {
 
-  val expectedTanksValuesCsvPath: Path = Paths.get("C:\\Projects\\expected_tank_values_28.csv")
+  val expectedTanksValuesCsvPath: Path = Paths.get("E:\\Project\\expected_tank_values_28.csv")
 
   def tanksExpectedValues(path: Path = expectedTanksValuesCsvPath): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
     val tank = line.split(",")
@@ -96,20 +100,26 @@ object UserWn8 {
     })
   }
 
+  case class UserWn8WithBattles(wn8: Double, battles: Int)
+
   def accountWn8(accountId: String) = {
+    Logger.logger.debug(s"Calculating wn8 for user: $accountId")
     val tanks = accountTanks(accountId)
     val expectedValues = tanksExpectedValues()
 
-    val totalExpected = tanks.flatMap(currentTank => {
+    var totalUserBattles: Int = 0
+
+    val totalExpected = tanks.par.flatMap(currentTank => {
       val currentTankId = currentTank.get("tank_id").get.toString.toInt
       val tankBattles = currentTank.get("all").get.asInstanceOf[Map[String, BigInt]].get("battles").get.toDouble
+      totalUserBattles += tankBattles.toInt
       expectedValues.get(currentTankId) match {
         case Some(expVal) => Some(Vehicle(expVal.IDNum, expVal.frag * tankBattles, expVal.dmg * tankBattles, expVal.spot * tankBattles, expVal.defence * tankBattles, 0.01 * expVal.win * tankBattles))
         case _ => None
       }
     }).reduce((a, b) => { Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win) })
 
-    val totalAccount = tanks.flatMap(currentTank => {
+    val totalAccount = tanks.par.flatMap(currentTank => {
       val currentTankId = currentTank.get("tank_id").get.toString.toInt
       val currentTankStatsMap = currentTank.get("all").get.asInstanceOf[Map[String, BigInt]]
       expectedValues.get(currentTankId) match {
@@ -126,16 +136,26 @@ object UserWn8 {
 
     }).reduce((a, b) => { Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win) })
 
-    calculateWn8(totalAccount, totalExpected)
-
+    UserWn8WithBattles(calculateWn8(totalAccount, totalExpected), totalUserBattles)
   }
 
   def main(args: Array[String]) {
 
-    val res = accountWn8("529089908")
-    println(res)
+    //val res = accountWn8("529089908")
+    //println(res)
     //val res = accountTanksWn8s("513663004")
     //res.sortBy(-_.wn8).foreach(println(_))
+
+    val clanDetails = ClanUtils.getClanDetails("500034335")
+
+    val wn8sAndBattles = clanDetails.members.par.map(member => UserWn8.accountWn8(member.accountId.toString))
+    val totalBattles = wn8sAndBattles.map(_.battles).sum
+    val weightedWn8s = wn8sAndBattles.map(v => (v.wn8 * v.battles) / totalBattles)
+
+    val avg = weightedWn8s.sum
+
+    //val avg: Double = clanDetails.members.par.map(member => UserWn8.accountWn8(member.accountId.toString))
+    println(avg)
 
   }
 

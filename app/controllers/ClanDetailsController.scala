@@ -3,6 +3,7 @@ package controllers
 import javax.inject._
 
 import com.domain.clans.ClanUtils
+import com.domain.wn8.UserWn8
 import play.api.Logger
 import play.api.mvc._
 
