@@ -10,6 +10,7 @@ GET     /tanker/:accountName        controllers.TankerDetailsController.details(
 GET     /clans                      controllers.ClanListController.list
 GET     /clans/refresh              controllers.ClanUtilsController.refresh
 GET     /clans/:clanId              controllers.ClanDetailsController.details(clanId)
+GET     /auth                       controllers.auth.AuthController.authorize(status: String ?= "", access_token: String ?= "", nickname: String ?= "", account_id: String ?= "", expires_at: String ?= "")
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

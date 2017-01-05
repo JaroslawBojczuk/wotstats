@@ -1,7 +1,6 @@
-@(tanker: Option[com.domain.presentation.model.TankerDetails])
-@()
+@(tanker: Option[com.domain.presentation.model.TankerDetails])(implicit request: RequestHeader)
 
-@main("Welcome to Play") {
+@main("Welcome to Play", request.session.get("user")) {
 @if(tanker.isDefined) {
 Battles: @tanker.get.battles
 Win ratio: @tanker.get.winratio

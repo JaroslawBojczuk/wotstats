@@ -1,5 +1,5 @@
-@()
+@()(implicit request: RequestHeader)
 
-@main("Welcom to WoTaTs") {
+@main("Welcome to WoTaTs", request.session.get("user")){
   Site with World of Tanks statistics.
 }

@@ -43,6 +43,7 @@ table.clan_skirmishes td.very_bad { font-weight: bold; color: #000000; }
     color: red
 }
 
+a {font-weight: bold}
 a:link {color:black; background-color:transparent; text-decoration:none}
 a:visited {color:black; background-color:transparent; text-decoration:none}
 a:hover   {color:red; background-color:transparent; text-decoration:none}
@@ -51,9 +52,9 @@ a:active  {color:black; background-color:transparent; text-decoration:none}
 /* The body, gives an example how the background should look like */
 body {
     font: 15px arial, sans-serif; color: black;
-    #background: #063d4c;
-    -webkit-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
-    -moz-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
+    background: #bdedfa;
+    #-webkit-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
+    #-moz-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
     box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
     width: 100%;
     min-height: 100%;

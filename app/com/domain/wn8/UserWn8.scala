@@ -14,7 +14,7 @@ import scala.concurrent.forkjoin.ForkJoinPool
 
 object UserWn8 {
 
-  val expectedTanksValuesCsvPath: Path = Paths.get("E:\\Project\\expected_tank_values_28.csv")
+  val expectedTanksValuesCsvPath: Path = Paths.get("C:\\Projects\\expected_tank_values_28.csv")
 
   def tanksExpectedValues(path: Path = expectedTanksValuesCsvPath): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
     val tank = line.split(",")

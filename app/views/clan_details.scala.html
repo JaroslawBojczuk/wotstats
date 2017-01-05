@@ -1,7 +1,10 @@
-@(clan: com.domain.presentation.model.ClanDetails)
+@import org.joda.time.LocalDate
+@import org.joda.time.LocalTime
+@import java.util.Date
+@(clan: com.domain.presentation.model.ClanDetails)(implicit request: RequestHeader)
 
-@main(clan.tag) {
-<table>
+@main(clan.tag, request.session.get("user")) {
+<table align="center">
     <tr>
         <td align="right">Clan:</td><td>@clan.name</td>
     </tr>
@@ -11,8 +14,23 @@
     <tr>
         <td align="right">Average WN8:</td><td>@clan.averageWn8</td>
     </tr>
-    @for(member <- clan.members) {
+    <tr>
+        <td align="right" valign="top">Upcoming battles:</td>
+        <td valign="top">
+            <table cellpadding="0" cellspacing="0">
+                <tr><td>Date&nbsp;</td><td>Attacker&nbsp;</td><td>Defender&nbsp;</td></tr>
+                @for(battle <- clan.battles) {
+                <tr>
+                    <td>@LocalDate.fromDateFields(new Date(battle.date * 1000)) @LocalTime.fromDateFields(new Date(battle.date * 1000)).toString("HH:mm")&nbsp;</td>
+                    <td><a href="@routes.ClanDetailsController.details(battle.attackerClanId)">@battle.attackerClanTag</a>&nbsp;</td>
+                    <td><a href="@routes.ClanDetailsController.details(battle.defenderClanId)">@battle.defenderClanTag</a>&nbsp;</td>
+                </tr>
+                }
+            </table>
+        </td>
+    </tr>
+    <!--@for(member <- clan.members) {
     <tr><td></td><td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td></tr>
-    }
+    }-->
 </table>
 }

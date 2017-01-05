@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String, loggedUser: Option[String] = None)(content: Html)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,6 +14,11 @@
                 <li><a href="/">Home page</a></li>
                 <li><a href="/clans">Clan skirmishes</a></li>
                 <li><a href="@routes.ClanUtilsController.refresh">Refresh clans</a></li>
+                @if(loggedUser.isDefined && storage.UserTokens(loggedUser.get).isDefined) {
+                    <li><a href="@routes.TankerDetailsController.details(storage.UserTokens(loggedUser.get).get.nickname)">@storage.UserTokens(loggedUser.get).get.nickname</a></li>
+                } else {
+                    <li><a href="https://api.worldoftanks.eu/wot/auth/login/?application_id=c0a88d6d3b5657d6750bd219d55fb550&nofollow=0&redirect_uri=http%3A%2F%2Flocalhost:9000/auth">LogIn</a></li>
+                }
             </ul>
         </div>
         @content
