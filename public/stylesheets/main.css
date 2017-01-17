@@ -82,6 +82,7 @@ body {
     0% { background: #bdedfa }
     100% { background: #063d4c }
 }
+
 /* Again, #content is only there to center the menu */
 #content {
 	text-align: left;
@@ -152,3 +153,16 @@ ul#darkmenu li a {
     text-decoration: none;
 }
 ul#darkmenu li:active a { padding: 11px 10px 9px 10px }
+
+
+table.clan_skirmishes thead tr .header {
+	cursor: pointer;
+}
+
+table.clan_skirmishes thead tr .headerSortDown {
+background-color: green;
+}
+
+table.clan_skirmishes thead tr .headerSortUp {
+background-color: teal;
+}

@@ -49,7 +49,7 @@ object ClanUtils {
     ClanDetails(clanTag, clanName, avg, membersList, getClanStrongholdPlannedBattles(clanId))
   }
 
-  def getClanStrongholdPlannedBattles(clanId: String) = {
+  def getClanStrongholdPlannedBattles(clanId: String): Seq[StrongholdBattle] = {
     val clanResponse = scala.io.Source.fromURL(clanShBattlesUrl(clanId)).mkString
     val parsedBattles: JValue = render(parse(clanResponse) \ "data" \ s"$clanId")
 

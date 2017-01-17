@@ -1,9 +1,18 @@
 @(clans: Seq[com.domain.presentation.model.ClanSummary])(implicit request: RequestHeader)
 
 @main("Clans", request.session.get("user")) {
-<table align="center" class="clan_skirmishes" cellpadding="0" cellspacing="0">
-    <thead><td></td><td></td><td></td><td colspan="3">Skirmish Delta</td><td colspan="3">Skirmish Total</td></thead>
-    <thead><td></td><td>Clan</td><td>Members</td><td>Battles</td><td>Wins</td><td>%</td><td>Battles</td><td>Wins</td><td>%</td></thead>
+
+
+<script>
+$(function() {
+    $("#clans").tablesorter( {sortList: [[3,0], [8,0]]} );
+});
+</script>
+
+<table align="center" id="clans" class="clan_skirmishes" cellpadding="0" cellspacing="0">
+    <!--<thead><th></th><th></th><th></th><th colspan="3">Skirmish Delta</th><th colspan="3">Skirmish Total</th></thead>-->
+    <thead><th></th><th>Clan</th><th>Members</th><th>Battles 24h</th><th>Wins 24h</th><th>%</th><th>Battles</th><th>Wins</th><th>%</th></thead>
+    <tbody>
     @for(clan <- clans) {
     <tr class="hoverable">
         <td><img src="@clan.emblem"></td>
@@ -31,5 +40,6 @@
         <td class="@com.domain.presentation.model.ColorHelper.skirmishWinRatio(clan.totalWinRatio)">@clan.totalWinRatio.toInt%</td>
     </tr>
     }
+    </tbody>
 </table>
 }
