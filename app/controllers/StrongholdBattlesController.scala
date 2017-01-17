@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 @Singleton
 class StrongholdBattlesController @Inject() extends Controller {
 
-  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constants.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=10"
+  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constants.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=15"
 
   def list() = Action { implicit request =>
 

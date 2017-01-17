@@ -1,6 +1,6 @@
 @import org.joda.time.LocalDate
 @import org.joda.time.LocalTime
-@import java.util.Date
+@import java.util.Date; var prevDate: org.joda.time.LocalDate = null; var currentDate: org.joda.time.LocalDate = null; var currentTime: String = null
 @(clan: com.domain.presentation.model.ClanDetails)(implicit request: RequestHeader)
 
 @main(clan.tag, request.session.get("user")) {
@@ -18,12 +18,20 @@
         <td align="right" valign="top">Upcoming battles:</td>
         <td valign="top">
             <table cellpadding="0" cellspacing="0">
-                <tr><td>Date&nbsp;</td><td>Attacker&nbsp;</td><td>Defender&nbsp;</td></tr>
+                <tr><td>Date&nbsp;</td><td>Attacker&nbsp;</td><td></td><td align="right">Defender&nbsp;</td></tr>
                 @for(battle <- clan.battles) {
+                @(currentDate = LocalDate.fromDateFields(new Date(battle.date * 1000)))
+                @(currentTime = LocalTime.fromDateFields(new Date(battle.date * 1000)).toString("HH:mm"))
                 <tr>
-                    <td>@LocalDate.fromDateFields(new Date(battle.date * 1000)) @LocalTime.fromDateFields(new Date(battle.date * 1000)).toString("HH:mm")&nbsp;</td>
+                    @if(prevDate == currentDate) {
+                    <td align="right">@currentTime&nbsp;</td>
+                    } else {
+                    <td align="right"><b>@currentDate</b> @currentTime&nbsp;</td>
+                    }
+                    @(prevDate = currentDate)
                     <td><a href="@routes.ClanDetailsController.details(battle.attackerClanId)">@battle.attackerClanTag</a>&nbsp;</td>
-                    <td><a href="@routes.ClanDetailsController.details(battle.defenderClanId)">@battle.defenderClanTag</a>&nbsp;</td>
+                    <td>vs</td>
+                    <td align="right"><a href="@routes.ClanDetailsController.details(battle.defenderClanId)">@battle.defenderClanTag</a>&nbsp;</td>
                 </tr>
                 }
             </table>
