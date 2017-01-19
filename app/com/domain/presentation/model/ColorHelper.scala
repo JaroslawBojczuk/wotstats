@@ -15,7 +15,7 @@ object ColorHelper {
     case _ => "super_unicum"
   }
 
-  def wn8Color(wn8: Int) = wn8 match {
+  def wn8Color(wn8: Double): String = wn8 match {
     case x if 0 <= x && x < 300 => "very_bad"
     case x if 300 <= x && x < 450 => "bad"
     case x if 450 <= x && x < 650 => "below_average"
@@ -27,5 +27,7 @@ object ColorHelper {
     case x if 2450 <= x && x < 2900 => "unicum"
     case _ => "super_unicum"
   }
+
+  def wn8Color(wn8: String): String = wn8Color(wn8.toDouble)
 
 }

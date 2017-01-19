@@ -71,17 +71,6 @@ object ClanList {
     result
   }
 
-  def previousStats2: Seq[ClanSummary] = {
-
-    val filename = "E:\\Project\\29122016.txt"
-    val clanStats = scala.io.Source.fromFile(filename).getLines
-
-    clanStats.map(line => {
-      val values = line.split(",")
-      ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
-    }).toSeq
-  }
-
   def main(args: Array[String]): Unit = {
 
     /*val previous = previousStats
@@ -100,7 +89,7 @@ object ClanList {
 
       println(clan.tag)
 
-      if(!clan.tag.equals("CSA") && !clan.tag.equals("CSOH")) {
+      if (!clan.tag.equals("CSA") && !clan.tag.equals("CSOH")) {
         try {
           val members = ClanUtils.getClanDetails(clan.clanId.toString).members.map(_.accountId).mkString("%2C")
           val clansResponse = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/account/info/?application_id=c0a88d6d3b5657d6750bd219d55fb550&account_id=$members&fields=ban_time").mkString
@@ -110,11 +99,11 @@ object ClanList {
             val acc = account._1
             val isBanned = account._2.get("ban_time").get != null
             if (isBanned) {
-            println(s"$acc: $isBanned ${account._2.get("ban_time").get}")
+              println(s"$acc: $isBanned ${account._2.get("ban_time").get}")
             }
           })
         } catch {
-          case _ => println("err")
+          case _: Throwable => println("err")
         }
       }
     })

@@ -25,16 +25,22 @@ table.clan_skirmishes {
 table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
 table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
 
-table.clan_skirmishes td.super_unicum { font-weight: bold; color: #8225ad; }
-table.clan_skirmishes td.unicum { font-weight: bold; color: #c64cff; }
-table.clan_skirmishes td.great { font-weight: bold; color: #00a0b8; }
-table.clan_skirmishes td.very_good { font-weight: bold; color: #2ae4ff; }
-table.clan_skirmishes td.good { font-weight: bold; color: #459300; }
-table.clan_skirmishes td.above_average { font-weight: bold; color: #77e812; }
-table.clan_skirmishes td.average { font-weight: bold; color: #e6df27; }
-table.clan_skirmishes td.below_average { font-weight: bold; color: #ff8a00; }
-table.clan_skirmishes td.bad { font-weight: bold; color: #f11919; }
-table.clan_skirmishes td.very_bad { font-weight: bold; color: #000000; }
+a {font-weight: bold}
+a:link    { background-color:transparent; text-decoration:none }
+a:visited { background-color:transparent; text-decoration:none }
+a:hover   { color: red; background-color:transparent; text-decoration:none }
+a:active  { background-color:transparent; text-decoration:none }
+
+.super_unicum { font-weight: bold; color: #8225ad; }
+.unicum { font-weight: bold; color: #c64cff; }
+.great { font-weight: bold; color: #00a0b8; }
+.very_good { font-weight: bold; color: #2ae4ff; }
+.good { font-weight: bold; color: #459300; }
+.above_average { font-weight: bold; color: #77e812; }
+.average { font-weight: bold; color: #e6df27; }
+.below_average { font-weight: bold; color: #ff8a00; }
+.bad { font-weight: bold; color: #f11919; }
+.very_bad { font-weight: bold; color: #000000; }
 
 .positive {
     color: green
@@ -43,11 +49,7 @@ table.clan_skirmishes td.very_bad { font-weight: bold; color: #000000; }
     color: red
 }
 
-a {font-weight: bold}
-a:link {color:black; background-color:transparent; text-decoration:none}
-a:visited {color:black; background-color:transparent; text-decoration:none}
-a:hover   {color:red; background-color:transparent; text-decoration:none}
-a:active  {color:black; background-color:transparent; text-decoration:none}
+
 
 /* The body, gives an example how the background should look like */
 body {

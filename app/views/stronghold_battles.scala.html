@@ -1,3 +1,4 @@
+@import com.domain.clans.ClanUtils
 @import org.joda.time.LocalDate
 @import org.joda.time.LocalTime
 @import java.util.Date; var prevDate: org.joda.time.LocalDate = null; var currentDate: org.joda.time.LocalDate = null; var currentTime: String = null
@@ -17,9 +18,13 @@
             <td align="right"><b>@currentDate</b> @currentTime&nbsp;</td>
         }
         @(prevDate = currentDate)
-        <td><a href="@routes.ClanDetailsController.details(battle.attackerClanId)">@battle.attackerClanTag</a>&nbsp;</td>
+        <td>
+            <a class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanUtils.getClanCachedWn8(battle.attackerClanTag).getOrElse("0").toString)" href="@routes.ClanDetailsController.details(battle.attackerClanId)">@battle.attackerClanTag</a>&nbsp;
+        </td>
         <td>vs</td>
-        <td align="right"><a href="@routes.ClanDetailsController.details(battle.defenderClanId)">@battle.defenderClanTag</a>&nbsp;</td>
+        <td align="right">
+            <a class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanUtils.getClanCachedWn8(battle.defenderClanTag).getOrElse("0").toString)" href="@routes.ClanDetailsController.details(battle.defenderClanId)">@battle.defenderClanTag</a>&nbsp;
+        </td>
     </tr>
     }
 </table>
