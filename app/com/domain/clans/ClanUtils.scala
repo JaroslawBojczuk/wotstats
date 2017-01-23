@@ -2,18 +2,22 @@ package com.domain.clans
 
 import java.io.File
 import java.nio.file.{Files, Paths}
+import java.util
 import java.util.Date
 
 import com.domain.Constants
 import com.domain.presentation.model.{ClanDetails, ClanMemberDetails, StrongholdBattle}
 import com.domain.wn8.UserWn8
+import com.domain.wn8.UserWn8.UserWn8WithBattles
 import com.fasterxml.jackson.databind.JsonNode
+import io.FileOps
 import org.joda.time.LocalTime
-import play.libs.Json
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import play.libs.Json
 
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
+import scala.collection.parallel.ParSeq
 import scala.io.{Codec, Source}
 
 object ClanUtils {
@@ -33,21 +37,31 @@ object ClanUtils {
     val clanJson = Json.parse(clanResponse)
 
     val data: JsonNode = clanJson.findPath("data").findPath(clanId)
-
     val clanName = data.findPath("name").asText()
     val clanTag = data.findPath("tag").asText()
-    val members = data.findValue("members").elements()
 
+    val membersWithWn8 = calculateWn8ForClanMembers(data)
+    val avg = getClanAverageWn8(clanTag, membersWithWn8)
+
+    ClanDetails(clanTag, clanName, avg, membersWithWn8.sortBy(-_.wn8), getClanStrongholdPlannedBattles(clanId))
+  }
+
+  private def calculateWn8ForClanMembers(data: JsonNode): Seq[ClanMemberDetails] = {
+    val membersWithWn8 = extractMembers(data).par.map(member => {
+      val wn8AndBattles: UserWn8WithBattles = UserWn8.getAccountCachedWn8(member.accountId.toString)
+      ClanMemberDetails(member.name, member.accountId, wn8AndBattles.wn8, wn8AndBattles.battles)
+    }).toList.toSeq
+    membersWithWn8
+  }
+
+  private def extractMembers(data: JsonNode): Seq[ClanMemberDetails] = {
     val membersList: mutable.Buffer[ClanMemberDetails] = Seq.empty.toBuffer
-
+    val members = data.findValue("members").elements()
     while (members.hasNext) {
       val member: JsonNode = members.next()
-      membersList += ClanMemberDetails(member.findPath("account_name").asText(), member.findPath("account_id").asInt)
+      membersList += ClanMemberDetails(member.findPath("account_name").asText(), member.findPath("account_id").asInt, 0, 0)
     }
-
-    val avg: Double = getClanAverageWn8(clanTag, membersList)
-
-    ClanDetails(clanTag, clanName, avg, membersList, getClanStrongholdPlannedBattles(clanId))
+    membersList.toSeq
   }
 
   private def getClanAverageWn8(clanTag: String, membersList: Seq[ClanMemberDetails]): Double = {
@@ -55,7 +69,7 @@ object ClanUtils {
       case Some(average) => average
       case _ => {
         val average = calculateAverageWn8(membersList)
-        printToFile(new File(clanFilePath(clanTag)))(p => p.print(average))
+        FileOps.printToFile(new File(clanFilePath(clanTag)))(p => p.print(average))
         average
       }
     }
@@ -67,9 +81,8 @@ object ClanUtils {
   }
 
   private def calculateAverageWn8(membersList: Seq[ClanMemberDetails]): Double = {
-    val wn8sAndBattles = membersList.par.map(member => UserWn8.accountWn8(member.accountId.toString))
-    val totalBattles = wn8sAndBattles.map(_.battles).sum
-    val weightedWn8s = wn8sAndBattles.map(v => (v.wn8 * v.battles) / totalBattles)
+    val totalBattles = membersList.map(_.battles).sum
+    val weightedWn8s = membersList.map(v => (v.wn8 * v.battles) / totalBattles)
     val avg = BigDecimal(weightedWn8s.sum).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
     avg
   }
@@ -106,19 +119,11 @@ object ClanUtils {
     println(vs + ": " + joda.toString("HH:mm"))
   }
 
-  private def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
-    val p = new java.io.PrintWriter(f)
-    try {
-      op(p)
-    } finally {
-      p.close()
-    }
-  }
 
   def saveCurrentClansInFile = {
     val current = ClanList.topClansCurrentStats
     FILE_WITH_LAST_CLAN_STATS.createNewFile()
-    printToFile(FILE_WITH_LAST_CLAN_STATS) {
+    FileOps.printToFile(FILE_WITH_LAST_CLAN_STATS) {
       p =>
         current.foreach(clan => {
           p.println(s"${

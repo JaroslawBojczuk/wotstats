@@ -1,20 +1,24 @@
 package com.domain.wn8
 
+import java.io.File
 import java.nio.file.{Files, Path, Paths}
 
 import com.domain.Constants
 import com.domain.clans.ClanUtils
+import io.FileOps
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import play.api.Logger
 
 import scala.collection.JavaConverters._
-import scala.collection.parallel.{ForkJoinTaskSupport, ParSeq}
-import scala.concurrent.forkjoin.ForkJoinPool
+import scala.io.Source
 
 object UserWn8 {
 
   val expectedTanksValuesCsvPath: Path = Paths.get("C:\\Projects\\expected_tank_values_28.csv")
+  val FOLDER_WITH_USERS_WN8 = "C:\\Projects\\users"
+
+  private def userFilePath(userId: String): String = FOLDER_WITH_USERS_WN8 + "\\" + userId
 
   def tanksExpectedValues(path: Path = expectedTanksValuesCsvPath): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
     val tank = line.split(",")
@@ -42,7 +46,7 @@ object UserWn8 {
     parsedTanksStats.values.asInstanceOf[Map[String, Any]]
   }
 
-  private def currentTankAvgValues(tankId: Int, values: Map[String, BigInt]): Option[Vehicle] = {
+  private def tankAvgValues(tankId: Int, values: Map[String, BigInt]): Option[Vehicle] = {
     val damage: Double = values.get("damage_dealt").get.toDouble
     val spot: Double = values.get("spotted").get.toDouble
     val frags: Double = values.get("frags").get.toDouble
@@ -87,13 +91,10 @@ object UserWn8 {
       val currentTankStatsMap = currentTank.get("all").get.asInstanceOf[Map[String, BigInt]]
       expectedValues.get(currentTankId) match {
         case Some(vehicleExpectedValues) => {
-          val currentTankAverageValues: Option[Vehicle] = currentTankAvgValues(currentTankId, currentTankStatsMap)
-
-          val result = currentTankAverageValues match {
+          tankAvgValues(currentTankId, currentTankStatsMap) match {
             case Some(currentVeh) => Some(VehicleWn8(currentTankId, calculateWn8(currentVeh, vehicleExpectedValues)))
             case _ => None
           }
-          result
         }
         case _ => None
       }
@@ -102,7 +103,28 @@ object UserWn8 {
 
   case class UserWn8WithBattles(wn8: Double, battles: Int)
 
-  def accountWn8(accountId: String) = {
+  private def cachedWn8InFile(userTag: String): Option[UserWn8WithBattles] = {
+    if (Files.exists(Paths.get(userFilePath(userTag)))) {
+      val wn8AndBattles = Source.fromFile(userFilePath(userTag)).mkString.split(";")
+      Some(UserWn8WithBattles(wn8AndBattles(0).toDouble, wn8AndBattles(1).toInt))
+    }
+    else None
+  }
+
+  def getAccountCachedWn8(accountId: String) = {
+    cachedWn8InFile(accountId) match {
+      case Some(data) => data
+      case _ => {
+        val data = calculateWn8(accountId)
+        FileOps.printToFile(new File(userFilePath(accountId)))(p => p.print(s"${data.wn8};${data.battles}"))
+        data
+      }
+    }
+
+  }
+
+  private def calculateWn8(accountId: String): UserWn8WithBattles = {
+
     Logger.logger.debug(s"Calculating wn8 for user: $accountId")
     val tanks = accountTanks(accountId)
     val expectedValues = tanksExpectedValues()
@@ -117,7 +139,9 @@ object UserWn8 {
         case Some(expVal) => Some(Vehicle(expVal.IDNum, expVal.frag * tankBattles, expVal.dmg * tankBattles, expVal.spot * tankBattles, expVal.defence * tankBattles, 0.01 * expVal.win * tankBattles))
         case _ => None
       }
-    }).reduce((a, b) => { Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win) })
+    }).reduce((a, b) => {
+      Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
+    })
 
     val totalAccount = tanks.par.flatMap(currentTank => {
       val currentTankId = currentTank.get("tank_id").get.toString.toInt
@@ -134,9 +158,12 @@ object UserWn8 {
         case _ => None
       }
 
-    }).reduce((a, b) => { Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win) })
+    }).reduce((a, b) => {
+      Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
+    })
 
     UserWn8WithBattles(calculateWn8(totalAccount, totalExpected), totalUserBattles)
+
   }
 
   def main(args: Array[String]) {
@@ -148,7 +175,7 @@ object UserWn8 {
 
     val clanDetails = ClanUtils.getClanDetails("500034335")
 
-    val wn8sAndBattles = clanDetails.members.par.map(member => UserWn8.accountWn8(member.accountId.toString))
+    val wn8sAndBattles = clanDetails.members.par.map(member => UserWn8.getAccountCachedWn8(member.accountId.toString))
     val totalBattles = wn8sAndBattles.map(_.battles).sum
     val weightedWn8s = wn8sAndBattles.map(v => (v.wn8 * v.battles) / totalBattles)
 

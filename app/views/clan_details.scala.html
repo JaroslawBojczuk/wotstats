@@ -13,7 +13,7 @@
         <td align="right">Members:</td><td>@clan.members.size</td>
     </tr>
     <tr>
-        <td align="right">Average WN8:</td><td>@clan.averageWn8</td>
+        <td align="right" >Average WN8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(clan.averageWn8)">@clan.averageWn8</td>
     </tr>
     <tr>
         <td align="right" valign="top">Upcoming battles:</td>
@@ -42,8 +42,9 @@
             </table>
         </td>
     </tr>
-    <!--@for(member <- clan.members) {
-    <tr><td></td><td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td></tr>
-    }-->
+    @for(member <- clan.members) {
+    <tr><td align="right" class="@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)">@member.wn8.toInt&nbsp;</td><td>
+        <a class="@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)" href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td></tr>
+    }
 </table>
 }
