@@ -14,7 +14,7 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 import scala.collection.mutable
-import scala.io.Source
+import scala.io.{Codec, Source}
 
 object ClanUtils {
 
@@ -29,7 +29,7 @@ object ClanUtils {
   private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + "\\" + clanTag
 
   def getClanDetails(clanId: String): ClanDetails = {
-    val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId)).mkString
+    val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId))(Codec.UTF8).mkString
     val clanJson = Json.parse(clanResponse)
 
     val data: JsonNode = clanJson.findPath("data").findPath(clanId)
@@ -92,7 +92,7 @@ object ClanUtils {
 
   def main(args: Array[String]): Unit = {
 
-    val det = getClanDetails("500001579")
+    val det = getClanDetails("500000013")
 
     println(det)
 
