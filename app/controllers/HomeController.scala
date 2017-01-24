@@ -27,7 +27,7 @@ class HomeController @Inject() extends Controller {
 
   def tanks(accountId: String) = Action { implicit request =>
 
-    val res = Wn8Veh.calculate(accountId).map(tank => TankStats(tank._1, tank._3, tank._2.toInt))
+    val res = Wn8Veh.calculate(accountId)
 
     Ok(views.html.tanks(res))
   }

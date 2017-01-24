@@ -2,6 +2,7 @@ package com.domain.user
 
 import com.domain.Constants
 import com.domain.presentation.model.TankerDetails
+import com.domain.wn8.Wn8Veh
 import com.fasterxml.jackson.databind.JsonNode
 import play.libs.Json
 
@@ -25,6 +26,7 @@ object WGTankerDetails {
         val userJson = Json.parse(userResponse)
         val data: JsonNode = userJson.findPath("data")
         val name = data.findPath(accountId).findPath("nickname").asText()
+        val clanId = data.findPath(accountId).findPath("clan_id").asText()
 
         val statisticsAll: JsonNode = data.findPath("statistics").findPath("all")
         val battles = statisticsAll.findPath("battles").asInt()
@@ -32,14 +34,15 @@ object WGTankerDetails {
 
         val statisticsSkirmish: JsonNode = data.findPath("statistics").findPath("stronghold_skirmish")
         val battlesSkirmish = statisticsSkirmish.findPath("battles").asInt()
+        val tanks = Wn8Veh.calculate(accountId).sortBy(-_.wn8)
 
-        Some(TankerDetails(name, battles, wins, battlesSkirmish, com.domain.wn8.UserWn8.getAccountCachedWn8(accountId).wn8))
+        Some(TankerDetails(name, clanId, battles, wins, battlesSkirmish, com.domain.wn8.UserWn8.getAccountCachedWn8(accountId).wn8, tanks))
       case _ => None
     }
   }
 
   def main(args: Array[String]) {
-    println(getDetails("12"))
+    println(getDetails("Vasth"))
   }
 
 }

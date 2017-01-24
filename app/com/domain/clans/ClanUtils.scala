@@ -22,6 +22,8 @@ import scala.io.{Codec, Source}
 
 object ClanUtils {
 
+  private def clanTag(clanId: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId&fields=clan_tag"
+
   private def clanDetailsUrl(clanId: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
 
   private def clanShBattlesUrl(clanId: String) = s"https://api.worldoftanks.eu/wot/stronghold/plannedbattles/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
@@ -31,6 +33,13 @@ object ClanUtils {
   val FOLDER_WITH_CLAN_AVG_WN8 = "C:\\Projects\\clans"
 
   private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + "\\" + clanTag
+
+  def getClanTag(clanId: String): String = {
+    val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId))(Codec.UTF8).mkString
+    val clanJson = Json.parse(clanResponse)
+    val data: JsonNode = clanJson.findPath("data").findPath(clanId)
+    data.findPath("tag").asText()
+  }
 
   def getClanDetails(clanId: String): ClanDetails = {
     val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId))(Codec.UTF8).mkString
@@ -49,7 +58,7 @@ object ClanUtils {
   private def calculateWn8ForClanMembers(data: JsonNode): Seq[ClanMemberDetails] = {
     val membersWithWn8 = extractMembers(data).par.map(member => {
       val wn8AndBattles: UserWn8WithBattles = UserWn8.getAccountCachedWn8(member.accountId.toString)
-      ClanMemberDetails(member.name, member.accountId, wn8AndBattles.wn8, wn8AndBattles.battles)
+      ClanMemberDetails(member.name, member.accountId, member.role, wn8AndBattles.wn8, wn8AndBattles.battles)
     }).toList.toSeq
     membersWithWn8
   }
@@ -59,7 +68,7 @@ object ClanUtils {
     val members = data.findValue("members").elements()
     while (members.hasNext) {
       val member: JsonNode = members.next()
-      membersList += ClanMemberDetails(member.findPath("account_name").asText(), member.findPath("account_id").asInt, 0, 0)
+      membersList += ClanMemberDetails(member.findPath("account_name").asText(), member.findPath("account_id").asInt, member.findPath("role_i18n").asText(), 0, 0)
     }
     membersList.toSeq
   }
@@ -105,18 +114,8 @@ object ClanUtils {
 
   def main(args: Array[String]): Unit = {
 
-    val det = getClanDetails("500000013")
+    println(getClanTag("500000013"))
 
-    println(det)
-
-
-    val date: Long = getClanStrongholdPlannedBattles("500034335").head.date
-
-    val vs: String = getClanStrongholdPlannedBattles("500023625").head.defenderClanTag
-
-    val joda = LocalTime.fromDateFields(new Date(date * 1000))
-
-    println(vs + ": " + joda.toString("HH:mm"))
   }
 
 

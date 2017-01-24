@@ -1,34 +1,26 @@
 package com.domain.wn8
 
+import com.domain.Constants
+import com.domain.presentation.model.TankStats
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
+import scala.util.Try
 
 
 object Wn8Veh {
 
-  def calculate(account_id: String): List[(String, Double, Int, Double)] = {
-    println("Starting")
+  def calculate(account_id: String) = {
 
     val tanks: Map[Int, Vehicle] = UserWn8.tanksExpectedValues()
 
-    val application_id: String = "c0a88d6d3b5657d6750bd219d55fb550"
-
-    val tankDetailsStart = System.currentTimeMillis()
-    val tanksDetailsResponse: String = scala.io.Source
-      .fromURL(s"https://api.worldoftanks.eu/wot/encyclopedia/tanks/?application_id=$application_id").mkString
-    val tankDetailsEnd = System.currentTimeMillis()
-
-    val tankStatsStart = System.currentTimeMillis()
-    val tanksStatsResponse: String = scala.io.Source
-      .fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=$application_id&account_id=$account_id").mkString
-    val tankStatsEnd = System.currentTimeMillis()
+    val tanksDetailsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/encyclopedia/tanks/?application_id=${Constants.APPLICATION_ID}").mkString
+    val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$account_id").mkString
 
     val parsedTanksDetails: JValue = parse(tanksDetailsResponse)
     val parsedTanksStats: JValue = render((parse(tanksStatsResponse) \ "data" \ s"$account_id"))
     val tanksStatsAsList = parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]
 
-    val calcsStart = System.currentTimeMillis()
     val res = tanksStatsAsList.flatMap(elem => {
 
       val currentTankId: Any = elem.get("tank_id").get
@@ -79,22 +71,13 @@ object Wn8Veh {
 
         val humanWN8: Double = BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
-        Some((tankName, humanWN8, battles.toInt, avg_frags))
+        Some(TankStats(tankName, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8))
+
       } else {
         None
       }
     })
-
-    res.sortBy(elem => -elem._2)
-  }
-
-  def main(args: Array[String]) {
-
-    val calcsEnd = System.currentTimeMillis()
-
-    calculate("500557563").sortBy(elem => -elem._2).filter(e => e._3 > 1)
-      .foreach(elem => println(f"${elem._1.padTo(15, " ").mkString("")} \t ${elem._2}%2.0f \t ${elem._3} \t ${elem._4}%2.2f"))
-
+    res
   }
 
 }

@@ -25,7 +25,7 @@ table.clan_skirmishes {
 table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
 table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
 
-a {font-weight: bold}
+a {color: black; font-weight: bold}
 a:link    { background-color:transparent; text-decoration:none }
 a:visited { background-color:transparent; text-decoration:none }
 a:hover   { color: red; background-color:transparent; text-decoration:none }
@@ -41,6 +41,29 @@ a:active  { background-color:transparent; text-decoration:none }
 .below_average { font-weight: bold; color: #ff8a00; }
 .bad { font-weight: bold; color: #f11919; }
 .very_bad { font-weight: bold; color: #000000; }
+
+.bg_super_unicum { background-color: #8225ad; color: white; border: 1px solid white}
+.bg_unicum { background-color: #c64cff; color: white; border: 1px solid white}
+.bg_great { background-color: #00a0b8; color: white; border: 1px solid white}
+.bg_very_good { background-color: #2ae4ff; color: white; border: 1px solid white}
+.bg_good { background-color: #459300; color: white; border: 1px solid white}
+.bg_above_average { background-color: #77e812; color: white; border: 1px solid white}
+.bg_average { background-color: #e6df27; color: white; border: 1px solid white}
+.bg_below_average { background-color: #ff8a00; color: white; border: 1px solid white}
+.bg_bad { background-color: #f11919; color: white; border: 1px solid white}
+.bg_very_bad { background-color: #000000; color: white; border: 1px solid white}
+
+.bg_super_unicum:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_unicum:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_great:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_very_good:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_good:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_above_average:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_average:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_below_average:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_bad:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+.bg_very_bad:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
+
 
 .positive {
     color: green

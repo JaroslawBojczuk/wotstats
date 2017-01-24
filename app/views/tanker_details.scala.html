@@ -6,6 +6,33 @@ Battles: @tanker.get.battles
 Win ratio: @tanker.get.winratio
 Skirmishes: @tanker.get.battlesSkirmish
 Wn8: @tanker.get.wn8
+
+<table align="center">
+    <tr><td align="right">Name:</td><td>@tanker.get.name</td></tr>
+    <tr><td align="right">Clan:</td><td><a href="@routes.ClanDetailsController.details(tanker.get.clanId.toString)">@com.domain.clans.ClanUtils.getClanTag(tanker.get.clanId)</a></td></tr>
+    <tr><td align="right">Wn8:</td><td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@tanker.get.wn8</td></tr>
+</table>
+
+<br/><br/>
+
+<script>
+$(function() {
+    $("#tanks").tablesorter( {sortList: [[4,0], [2,0]]} );
+});
+</script>
+
+<table align="center" id="tanks">
+    <thead><th align="right">Tank&nbsp;</th><th>Tier</th><th>Wn8</th><th>Battles</th></thead>
+    @for(tank <- tanker.get.tanks) {
+    <tr>
+        <td align="right">@tank.name&nbsp;</td>
+        <td>@tank.tier</td>
+        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">&nbsp;@tank.wn8&nbsp;</td>
+        <td>@tank.battles</td>
+    </tr>
+    }
+</table>
+
 } else {
 Not found
 }

@@ -43,8 +43,11 @@
         </td>
     </tr>
     @for(member <- clan.members) {
-    <tr><td align="right" class="@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)">@member.wn8.toInt&nbsp;</td><td>
-        <a class="@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)" href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td></tr>
+    <tr>
+        <td align="right" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)">@member.wn8.toInt&nbsp;</td>
+        <td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td>
+        <td>@member.role</td>
+    </tr>
     }
 </table>
 }
