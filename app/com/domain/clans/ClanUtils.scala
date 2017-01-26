@@ -97,7 +97,7 @@ object ClanUtils {
   }
 
   def getClanStrongholdPlannedBattles(clanId: String): Seq[StrongholdBattle] = {
-    val clanResponse = scala.io.Source.fromURL(clanShBattlesUrl(clanId)).mkString
+    val clanResponse = scala.io.Source.fromURL(clanShBattlesUrl(clanId))(Codec.UTF8).mkString
     val parsedBattles: JValue = render(parse(clanResponse) \ "data" \ s"$clanId")
 
     if (parsedBattles.toSome.isDefined) {

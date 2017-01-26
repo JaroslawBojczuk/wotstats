@@ -79,7 +79,7 @@ object UserWn8 {
 
     val WN8 = 980 * rDAMAGEc + 210 * rDAMAGEc * rFRAGc + 155 * rFRAGc * rSPOTc + 75 * rDEFc * rFRAGc + 145 * Math.min(1.8, rWINc)
 
-    BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+    if (WN8 > 0) BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble else 0
   }
 
   def accountTanksWn8s(accountId: String): List[VehicleWn8] = {

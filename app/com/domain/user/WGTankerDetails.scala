@@ -31,12 +31,21 @@ object WGTankerDetails {
         val statisticsAll: JsonNode = data.findPath("statistics").findPath("all")
         val battles = statisticsAll.findPath("battles").asInt()
         val wins = statisticsAll.findPath("wins").asInt()
+        val spotted = statisticsAll.findPath("spotted").asInt()
+        val frags = statisticsAll.findPath("frags").asInt()
 
-        val statisticsSkirmish: JsonNode = data.findPath("statistics").findPath("stronghold_skirmish")
-        val battlesSkirmish = statisticsSkirmish.findPath("battles").asInt()
+        /*val statisticsSkirmish: JsonNode = data.findPath("statistics").findPath("stronghold_skirmish")
+        val battlesSkirmish = statisticsSkirmish.findPath("battles").asInt()*/
+
         val tanks = Wn8Veh.calculate(accountId).sortBy(-_.wn8)
 
-        Some(TankerDetails(name, clanId, battles, wins, battlesSkirmish, com.domain.wn8.UserWn8.getAccountCachedWn8(accountId).wn8, tanks))
+        val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if(t.tier > 0) t.battles else 0).sum.toDouble
+        val avgSpot = spotted.toDouble / battles.toDouble
+        val avgFrags = frags.toDouble / battles.toDouble
+
+        println(avgFrags)
+
+        Some(TankerDetails(name, clanId, battles, wins, avgTier, avgSpot, avgFrags, com.domain.wn8.UserWn8.getAccountCachedWn8(accountId).wn8, tanks))
       case _ => None
     }
   }

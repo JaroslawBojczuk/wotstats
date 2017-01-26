@@ -31,8 +31,6 @@ object Wn8Veh {
       val tankStatsMap = currentTankStats.get.asInstanceOf[Map[String, BigInt]]
 
       if (tanks.get(Integer.valueOf(currentTankId.toString)).isDefined && tankStatsMap.get("battles").get.toDouble != 0) {
-        //if (tankLevel.equals("10") && tanks.get(Integer.valueOf(currentTankId.toString)).isDefined) {
-
         val damage: Double = tankStatsMap.get("damage_dealt").get.toDouble
         val spot: Double = tankStatsMap.get("spotted").get.toDouble
         val frags: Double = tankStatsMap.get("frags").get.toDouble
@@ -60,7 +58,6 @@ object Wn8Veh {
         val rDEF: Double = avg_defence / expDef
         val rWin: Double = avg_wins / expWin
 
-
         val rWINc = Math.max(0, (rWin - 0.71) / (1 - 0.71))
         val rDAMAGEc = Math.max(0, (rDAMAGE - 0.22) / (1 - 0.22))
         val rFRAGc = Math.max(0, Math.min(rDAMAGEc + 0.2, (rFRAG - 0.12) / (1 - 0.12)))
@@ -71,7 +68,10 @@ object Wn8Veh {
 
         val humanWN8: Double = BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
-        Some(TankStats(tankName, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8))
+        Some(TankStats(tankName, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8,
+          BigDecimal(avg_damage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+          BigDecimal(avg_spot).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+          BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble, avg_wins))
 
       } else {
         None

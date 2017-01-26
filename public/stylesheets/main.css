@@ -2,7 +2,6 @@ table.vehicles {
     width: 20%;
     padding: 5px;
     background-color:white;
-    font: 15px arial, sans-serif; color: white
 }
 
 table.vehicles tr:hover td { background-color: black; }
@@ -24,6 +23,8 @@ table.clan_skirmishes {
 }
 table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
 table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
+table.clan_skirmishes thead tr .header { cursor: pointer; }
+
 
 a {color: black; font-weight: bold}
 a:link    { background-color:transparent; text-decoration:none }
@@ -42,152 +43,98 @@ a:active  { background-color:transparent; text-decoration:none }
 .bad { font-weight: bold; color: #f11919; }
 .very_bad { font-weight: bold; color: #000000; }
 
-.bg_super_unicum { background-color: #8225ad; color: white; border: 1px solid white}
-.bg_unicum { background-color: #c64cff; color: white; border: 1px solid white}
-.bg_great { background-color: #00a0b8; color: white; border: 1px solid white}
-.bg_very_good { background-color: #2ae4ff; color: white; border: 1px solid white}
-.bg_good { background-color: #459300; color: white; border: 1px solid white}
-.bg_above_average { background-color: #77e812; color: white; border: 1px solid white}
-.bg_average { background-color: #e6df27; color: white; border: 1px solid white}
-.bg_below_average { background-color: #ff8a00; color: white; border: 1px solid white}
-.bg_bad { background-color: #f11919; color: white; border: 1px solid white}
-.bg_very_bad { background-color: #000000; color: white; border: 1px solid white}
+.bg_super_unicum { background-color: #8225ad; color: white;}
+.bg_unicum { background-color: #c64cff; color: white;}
+.bg_great { background-color: #00a0b8; color: white;}
+.bg_very_good { background-color: #2ae4ff; color: white;}
+.bg_good { background-color: #459300; color: white;}
+.bg_above_average { background-color: #77e812; color: white;}
+.bg_average { background-color: #e6df27; color: white;}
+.bg_below_average { background-color: #ff8a00; color: white;}
+.bg_bad { background-color: #f11919; color: white;}
+.bg_very_bad { background-color: #000000; color: white;}
 
-.bg_super_unicum:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_unicum:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_great:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_very_good:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_good:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_above_average:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_average:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_below_average:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_bad:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-.bg_very_bad:hover { background-color: white; color: black; border: 1px solid black; cursor: pointer}
-
-
-.positive {
-    color: green
-}
-.negative {
-    color: red
-}
+.bg_super_unicum:hover { background-color: white; color: black; cursor: pointer}
+.bg_unicum:hover { background-color: white; color: black; cursor: pointer}
+.bg_great:hover { background-color: white; color: black; cursor: pointer}
+.bg_very_good:hover { background-color: white; color: black; cursor: pointer}
+.bg_good:hover { background-color: white; color: black; cursor: pointer}
+.bg_above_average:hover { background-color: white; color: black; cursor: pointer}
+.bg_average:hover { background-color: white; color: black; cursor: pointer}
+.bg_below_average:hover { background-color: white; color: black; cursor: pointer}
+.bg_bad:hover { background-color: white; color: black; cursor: pointer}
+.bg_very_bad:hover { background-color: white; color: black; cursor: pointer}
 
 
+.positive { color: green }
+.negative { color: red }
+
+tr .headerSortDown { color: green; }
+tr .headerSortUp { color: teal; }
 
 /* The body, gives an example how the background should look like */
 body {
-    font: 15px arial, sans-serif; color: black;
-    background: #bdedfa;
-    #-webkit-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
-    #-moz-box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
-    box-shadow: inset 0px 0px 150px 0px rgba(0, 0, 0, 0.8);
+    font: 15px verdana, sans-serif; color: black;
+    background: silver;
     width: 100%;
     min-height: 100%;
     position: absolute;
     margin: 0;
 }
-/* These create the flashes */
-@-webkit-keyframes hover {
-    0% { background: #bdedfa }
-    100% { background: #063d4c }
-}
-@-moz-keyframes hover {
-    0% { background: #bdedfa }
-    100% { background: #063d4c }
-}
-@-ms-keyframes hover {
-    0% { background: #bdedfa }
-    100% { background: #063d4c }
-}
-@-o-keyframes hover {
-    0% { background: #bdedfa }
-    100% { background: #063d4c }
-}
-@keyframes hover {
-    0% { background: #bdedfa }
-    100% { background: #063d4c }
-}
 
-/* Again, #content is only there to center the menu */
-#content {
-	text-align: left;
-	width: 100%;
-	#height: 100%;}
-/* Here you go: This is what you need to get this menu */
-ul#darkmenu {
-    #margin-top: 3%;        				/* Well, you don't need this... */
-    display: inline-block;  				/* ... and this, this just centers the menu. */
-    list-style: none;
-    font-family: 'Gudea', sans-serif;	   /* Change this to use another font */
-    -webkit-transition: all 0.2s linear;
-    -moz-transition: all 0.2s linear;
-    -ms-transition: all 0.2s linear;
-    -o-transition: all 0.2s linear;
-    transition: all 0.2s linear;
-}
-ul#darkmenu li {
-    -webkit-transition: -webkit-box-shadow, background 0.2s linear;
-    -moz-transition: -moz-box-shadow, background 0.2s linear;
-    -ms-transition: -moz-box-shadow, background 0.2s linear;
-    -o-transition: -o-box-shadow, background 0.2s linear;
-    transition: box-shadow, background 0.2s linear;
-    background: #565656;
-    float: left;
-    text-shadow: 0px -1px 0px black;
-    font-size: 13px;
+ul.topnav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
     text-transform: uppercase;
-    -webkit-box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1), 0px 1px 2px rgba(0,0,0,0.3), inset -1px 0px 0px rgba(255, 255, 255, 0.1), inset 1px 0px 0px rgba(0,0,0,0.2);
-    -moz-box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1), 0px 1px 2px rgba(0,0,0,0.3), inset -1px 0px 0px rgba(255, 255, 255, 0.1), inset 1px 0px 0px rgba(0,0,0,0.2);
-    box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.1), 0px 1px 2px rgba(0,0,0,0.3), inset -1px 0px 0px rgba(255, 255, 255, 0.1), inset 1px 0px 0px rgba(0,0,0,0.2);
 }
-ul#darkmenu li:first-child {
-    -moz-border-radius-topleft: 10px;
-    -moz-border-radius-topright: 0px;
-    -moz-border-radius-bottomright: 0px;
-    -moz-border-radius-bottomleft: 10px;
-    -webkit-border-radius: 10px 0px 0px 10px;
-    border-radius: 10px 0px 0px 10px;
-}
-ul#darkmenu li:last-child {
-    -moz-border-radius-topleft: 0px;
-    -moz-border-radius-topright: 10px;
-    -moz-border-radius-bottomright: 10px;
-    -moz-border-radius-bottomleft: 0px;
-    -webkit-border-radius: 0px 10px 10px 0px;
-    border-radius: 0px 10px 10px 0px;
-}
-ul#darkmenu li:hover {
-    -webkit-animation: hover 0.5s 1;
-    -moz-animation: hover 0.5s 1;
-    -ms-animation: hover 0.5s 1;
-    -o-animation: hover 0.5s 1;
-    animation: hover 0.5s 1;
-    background: #063d4c;
-    text-shadow: 0px 0px 2px #11afda;
-}
-ul#darkmenu li:active {
-    background: #05303c;
-    -webkit-box-shadow: inset 0px -1px 0px 0px rgba(255, 255, 255, 0.1), inset 0px 2px 4px rgba(0,0,0,0.4);
-    -moz-box-shadow: inset 0px -1px 0px 0px rgba(255, 255, 255, 0.1), inset 0px 2px 4px rgba(0,0,0,0.4);
-    box-shadow: inset 0px -1px 0px 0px rgba(255, 255, 255, 0.1), inset 0px 2px 4px rgba(0,0,0,0.4);
-}
-ul#darkmenu li a {
-    padding: 10px;
-    display: block;
-    color: white;
+
+ul.topnav li { float: left; }
+ul.topnav li a {
+    display: inline-block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
     text-decoration: none;
-}
-ul#darkmenu li:active a { padding: 11px 10px 9px 10px }
-
-
-table.clan_skirmishes thead tr .header {
-	cursor: pointer;
+    transition: 0.3s;
+    font-size: 15px;
 }
 
-table.clan_skirmishes thead tr .headerSortDown {
-background-color: green;
+ul.topnav li a:hover {background-color: #555;}
+ul.topnav li.icon {display: none;}
+
+table.user_tanks th {
+    padding: 5px;
 }
 
-table.clan_skirmishes thead tr .headerSortUp {
-background-color: teal;
+table.user_tanks td {
+    border-bottom: 1px solid black;
+    padding: 5px;
+}
+
+table.user_tanks tr:hover {
+    background: #d1d0ce
+}
+
+table.members td {
+    border-bottom: 1px solid black;
+    padding: 5px;
+}
+
+table.members tr:hover {
+    background: #d1d0ce
+}
+
+table.members th {
+    padding: 5px;
+}
+
+div.section {
+    text-align: center;
+    width:100%;
+    background-color: grey;
+    font-weight: bold;
+    padding: 5px
 }

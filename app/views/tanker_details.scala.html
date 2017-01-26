@@ -2,33 +2,47 @@
 
 @main("Welcome to Play", request.session.get("user")) {
 @if(tanker.isDefined) {
-Battles: @tanker.get.battles
-Win ratio: @tanker.get.winratio
-Skirmishes: @tanker.get.battlesSkirmish
-Wn8: @tanker.get.wn8
 
 <table align="center">
     <tr><td align="right">Name:</td><td>@tanker.get.name</td></tr>
     <tr><td align="right">Clan:</td><td><a href="@routes.ClanDetailsController.details(tanker.get.clanId.toString)">@com.domain.clans.ClanUtils.getClanTag(tanker.get.clanId)</a></td></tr>
-    <tr><td align="right">Wn8:</td><td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@tanker.get.wn8</td></tr>
+    <tr><td align="right">Battles:</td><td>@tanker.get.battles</td></tr>
+    <tr><td align="right">Win ratio:</td><td>@{"%.2f".format(tanker.get.winratio)}%</td></tr>
+    <tr><td align="right">Spots:</td><td>@{"%.2f".format(tanker.get.avgSpot)}</td></tr>
+    <tr><td align="right">Frags:</td><td>@{"%.2f".format(tanker.get.avgFrags)}</td></tr>
+    <tr><td align="right">Wn8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@tanker.get.wn8</td></tr>
+    <tr><td align="right">Tier:</td><td>@{"%.2f".format(tanker.get.avgTier)}</td></tr>
 </table>
 
 <br/><br/>
 
 <script>
 $(function() {
-    $("#tanks").tablesorter( {sortList: [[4,0], [2,0]]} );
+    $("#tanks").tablesorter( {sortList: [[7,0]]} );
 });
 </script>
 
-<table align="center" id="tanks">
-    <thead><th align="right">Tank&nbsp;</th><th>Tier</th><th>Wn8</th><th>Battles</th></thead>
+<table cellpadding="0" cellspacing="0" align="center" id="tanks" class="user_tanks">
+    <thead>
+        <th align="left">Tank&nbsp;</th>
+        <th>Tier</th>
+        <th>Battles</th>
+        <th>Frags</th>
+        <th>Spot</th>
+        <th>Wins</th>
+        <th>Damage</th>
+        <th>Wn8</th>
+    </thead>
     @for(tank <- tanker.get.tanks) {
     <tr>
-        <td align="right">@tank.name&nbsp;</td>
-        <td>@tank.tier</td>
-        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">&nbsp;@tank.wn8&nbsp;</td>
-        <td>@tank.battles</td>
+        <td align="left">@tank.name&nbsp;</td>
+        <td align="center">@tank.tier</td>
+        <td align="center">@tank.battles</td>
+        <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+        <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+        <td align="right">@{"%.2f".format(tank.avgDmg)}</td>
+        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.2f".format(tank.wn8)}</td>
     </tr>
     }
 </table>
