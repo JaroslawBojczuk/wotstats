@@ -15,16 +15,16 @@ import scala.io.Source
 
 object UserWn8 {
 
-  val expectedTanksValuesCsvPath: Path = Paths.get("C:\\Projects\\expected_tank_values_28.csv")
-  val FOLDER_WITH_USERS_WN8 = "C:\\Projects\\users"
+  val expectedTanksValuesCsvPath: Path = Paths.get("E:\\Project\\wn8exp.csv")
+  val FOLDER_WITH_USERS_WN8 = "E:\\Project\\users"
 
   private def userFilePath(userId: String): String = FOLDER_WITH_USERS_WN8 + "\\" + userId
 
   def tanksExpectedValues(path: Path = expectedTanksValuesCsvPath): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
     val tank = line.split(",")
     tank(0) match {
-      case "tankid" => (0, Vehicle(0, 1, 1, 1, 1, 1))
-      case _ => (tank(0).toInt, Vehicle(tank(0).toInt, tank(1).toDouble, tank(2).toDouble, tank(3).toDouble, tank(4).toDouble, tank(5).toDouble))
+      case "tank_id" => (0, Vehicle(0, 1, 1, 1, 1, 1))
+      case _ => (tank(0).toInt, Vehicle(tank(0).toInt, tank(2).toDouble, tank(1).toDouble, tank(3).toDouble, tank(4).toDouble, tank(5).toDouble))
     }
   }).toMap
 
@@ -116,7 +116,7 @@ object UserWn8 {
       case Some(data) => data
       case _ => {
         val data = calculateWn8(accountId)
-        FileOps.printToFile(new File(userFilePath(accountId)))(p => p.print(s"${data.wn8};${data.battles}"))
+        FileOps.printToFile(new File(userFilePath(accountId)))(_.print(s"${data.wn8};${data.battles}"))
         data
       }
     }

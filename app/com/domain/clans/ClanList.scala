@@ -11,9 +11,11 @@ import scala.concurrent.Future
 
 object ClanList {
 
-  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constants.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=100"
+  private val CLAN_LIMIT = 100
 
-  private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/info/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanIds"
+  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constants.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=$CLAN_LIMIT"
+
+  private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/claninfo/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanIds"
 
   private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
 
@@ -30,22 +32,24 @@ object ClanList {
       (clan.findPath("clan_id").asInt(), clan.findPath("emblems").findPath("x24").findPath("portal").asText())
     }).toMap
 
-    val clanSkirmishResponse = scala.io.Source.fromURL(urlClanSkirmish(clansIds)).mkString
-    val clanSkirmishJson = Json.parse(clanSkirmishResponse)
+    clansIds.split(",").grouped(10).flatMap(clansIdsSplitted => {
+      val clanSkirmishResponse = scala.io.Source.fromURL(urlClanSkirmish(clansIdsSplitted.mkString(","))).mkString
+      val clanSkirmishJson = Json.parse(clanSkirmishResponse)
 
-    val data = clanSkirmishJson.findPath("data")
-    data.elements().asScala.map(clan => {
-      val clanId = clan.findPath("clan_id").asInt()
+      val data = clanSkirmishJson.findPath("data")
+      data.elements().asScala.map(clan => {
+        val clanId = clan.findPath("clan_id").asInt()
 
-      val tag = clan.findPath("clan_tag").asText()
-      val skirmish = clan.findPath("skirmish")
+        val tag = clan.findPath("clan_tag").asText()
+        val skirmish = clan.findPath("skirmish_statistics")
 
-      val battles = skirmish.findPath("battles_count").asInt()
-      val wins = skirmish.findPath("battles_wins").asInt()
+        val battles = skirmish.findPath("total_8").asInt()
+        val wins = skirmish.findPath("win_8").asInt()
 
-      ClanSummary(clanId, tag, clanEmblemsData.getOrElse(clanId, ""), clanMembersData.getOrElse(clanId, 0), battles, wins)
-    }).toSeq
-
+        ClanSummary(clanId, tag, clanEmblemsData.getOrElse(clanId, ""), clanMembersData.getOrElse(clanId, 0), battles, wins)
+      }).toSeq
+    }
+    ).toSeq
   }
 
   import scala.concurrent.ExecutionContext.Implicits.global

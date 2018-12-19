@@ -29,8 +29,8 @@ object ClanUtils {
   private def clanShBattlesUrl(clanId: String) = s"https://api.worldoftanks.eu/wot/stronghold/plannedbattles/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
 
   //val FILE_WITH_LAST_CLAN_STATS = new File(s"E:\\Project\\last.txt")
-  val FILE_WITH_LAST_CLAN_STATS = new File(s"C:\\Projects\\last.txt")
-  val FOLDER_WITH_CLAN_AVG_WN8 = "C:\\Projects\\clans"
+  val FILE_WITH_LAST_CLAN_STATS = new File(s"E:\\Project\\last.txt")
+  val FOLDER_WITH_CLAN_AVG_WN8 = "E:\\Project\\clans"
 
   private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + "\\" + clanTag
 
