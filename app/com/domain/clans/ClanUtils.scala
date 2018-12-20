@@ -24,7 +24,7 @@ object ClanUtils {
 
   private def clanShBattlesUrl(clanId: String) = s"https://api.worldoftanks.eu/wot/stronghold/plannedbattles/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
 
-  private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + "\\" + clanTag
+  private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + clanTag
 
   def getClanTag(clanId: String): String = {
     val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId))(Codec.UTF8).mkString

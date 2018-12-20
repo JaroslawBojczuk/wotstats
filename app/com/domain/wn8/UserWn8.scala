@@ -12,15 +12,13 @@ import play.api.Logger
 
 import scala.collection.JavaConverters._
 import scala.io.Source
+import Constants._
 
 object UserWn8 {
 
-  val expectedTanksValuesCsvPath: Path = Paths.get("E:\\Project\\wn8exp.csv")
-  val FOLDER_WITH_USERS_WN8 = "E:\\Project\\users"
+  private def userFilePath(userId: String): String = FOLDER_WITH_USERS_WN8 + userId
 
-  private def userFilePath(userId: String): String = FOLDER_WITH_USERS_WN8 + "\\" + userId
-
-  def tanksExpectedValues(path: Path = expectedTanksValuesCsvPath): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
+  def tanksExpectedValues(path: Path = EXPECTED_TANKS_VALUES_CSV_PATH): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
     val tank = line.split(",")
     tank(0) match {
       case "tank_id" => (0, Vehicle(0, 1, 1, 1, 1, 1))

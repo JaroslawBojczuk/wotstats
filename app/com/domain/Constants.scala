@@ -1,6 +1,7 @@
 package com.domain
 
 import java.io.File
+import java.nio.file.{Path, Paths}
 
 object Constants {
 
@@ -10,8 +11,14 @@ object Constants {
 
   val DATA_FOLDER_PATH: String = Config.getString("data_folder_path") + File.separator
 
-  val FILE_WITH_LAST_CLAN_STATS = s"${DATA_FOLDER_PATH}last.txt"
+  val FILE_WITH_LAST_CLAN_STATS: String = s"${DATA_FOLDER_PATH}last.txt"
 
-  val FOLDER_WITH_CLAN_AVG_WN8 = s"${DATA_FOLDER_PATH}clans"
+  val FOLDER_WITH_CLAN_AVG_WN8: String = s"${DATA_FOLDER_PATH}clans" + File.separator
+
+  val FOLDER_WITH_USERS_WN8: String = s"${DATA_FOLDER_PATH}users" + File.separator
+
+  val EXPECTED_TANKS_VALUES_CSV_PATH: Path = Paths.get(s"${DATA_FOLDER_PATH}wn8exp.csv")
+
+  val WG_REDIRECT_TO: String = Config.getString("wg_redirect")
 
 }

@@ -43,8 +43,6 @@ object WGTankerDetails {
         val avgSpot = spotted.toDouble / battles.toDouble
         val avgFrags = frags.toDouble / battles.toDouble
 
-        println(avgFrags)
-
         Some(TankerDetails(name, clanId, battles, wins, avgTier, avgSpot, avgFrags, com.domain.wn8.UserWn8.getAccountCachedWn8(accountId).wn8, tanks))
       case _ => None
     }
