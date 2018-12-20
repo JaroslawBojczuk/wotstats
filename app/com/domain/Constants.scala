@@ -7,7 +7,7 @@ object Constants {
 
   val APPLICATION_ID = "c0a88d6d3b5657d6750bd219d55fb550"
 
-  val CLAN_LIMIT = 100
+  val CLAN_LIMIT: Int = Config.getInt("clan_limit")
 
   val DATA_FOLDER_PATH: String = Config.getString("data_folder_path") + File.separator
 

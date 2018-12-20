@@ -8,4 +8,6 @@ object Config {
 
   def getString(key: String): String = configuration.getString(key)
 
+  def getInt(key: String): Int = configuration.getInt(key)
+
 }
