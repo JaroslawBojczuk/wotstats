@@ -37,14 +37,14 @@ $(function() {
          <td>@clan.membersCount</td>
         }
         @if(clan.clanDelta.isDefined) {
-         <td>@clan.clanDelta.get.skirmishBattles</td>
-         <td>@clan.clanDelta.get.skirmishBattlesWins</td>
+         <td>@clan.clanDelta.get.totalBattles <span style="font-size: 50%">(@clan.clanDelta.get.battles6 / @clan.clanDelta.get.battles8 / @clan.clanDelta.get.battles10)</span></td>
+         <td>@clan.clanDelta.get.totalWins <span style="font-size: 50%">(@clan.clanDelta.get.wins6 / @clan.clanDelta.get.wins8 / @clan.clanDelta.get.wins10)</span></td>
          <td class="@com.domain.presentation.model.ColorHelper.skirmishWinRatio(clan.clanDelta.get.winRatio)">@clan.clanDelta.get.winRatio.toInt%</td>
         } else {
          <td>-</td><td>-</td><td>-</td>
         }
-        <td>@clan.skirmishBattles</td>
-        <td>@clan.skirmishBattlesWins</td>
+        <td>@clan.skirmish.totalBattles</td>
+        <td>@clan.skirmish.totalWins</td>
         <td class="@com.domain.presentation.model.ColorHelper.skirmishWinRatio(clan.totalWinRatio)">@clan.totalWinRatio.toInt%</td>
     </tr>
     }

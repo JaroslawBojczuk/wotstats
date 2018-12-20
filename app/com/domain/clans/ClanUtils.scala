@@ -2,23 +2,19 @@ package com.domain.clans
 
 import java.io.File
 import java.nio.file.{Files, Paths}
-import java.util
-import java.util.Date
-
 import com.domain.Constants
 import com.domain.presentation.model.{ClanDetails, ClanMemberDetails, StrongholdBattle}
 import com.domain.wn8.UserWn8
 import com.domain.wn8.UserWn8.UserWn8WithBattles
 import com.fasterxml.jackson.databind.JsonNode
 import io.FileOps
-import org.joda.time.LocalTime
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import play.libs.Json
 
-import scala.collection.{immutable, mutable}
-import scala.collection.parallel.ParSeq
+import scala.collection.mutable
 import scala.io.{Codec, Source}
+import Constants._
 
 object ClanUtils {
 
@@ -27,10 +23,6 @@ object ClanUtils {
   private def clanDetailsUrl(clanId: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
 
   private def clanShBattlesUrl(clanId: String) = s"https://api.worldoftanks.eu/wot/stronghold/plannedbattles/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
-
-  //val FILE_WITH_LAST_CLAN_STATS = new File(s"E:\\Project\\last.txt")
-  val FILE_WITH_LAST_CLAN_STATS = new File(s"E:\\Project\\last.txt")
-  val FOLDER_WITH_CLAN_AVG_WN8 = "E:\\Project\\clans"
 
   private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + "\\" + clanTag
 
@@ -59,7 +51,7 @@ object ClanUtils {
     val membersWithWn8 = extractMembers(data).par.map(member => {
       val wn8AndBattles: UserWn8WithBattles = UserWn8.getAccountCachedWn8(member.accountId.toString)
       ClanMemberDetails(member.name, member.accountId, member.role, wn8AndBattles.wn8, wn8AndBattles.battles)
-    }).toList.toSeq
+    }).toList
     membersWithWn8
   }
 
@@ -70,7 +62,7 @@ object ClanUtils {
       val member: JsonNode = members.next()
       membersList += ClanMemberDetails(member.findPath("account_name").asText(), member.findPath("account_id").asInt, member.findPath("role_i18n").asText(), 0, 0)
     }
-    membersList.toSeq
+    membersList
   }
 
   private def getClanAverageWn8(clanTag: String, membersList: Seq[ClanMemberDetails]): Double = {
@@ -118,24 +110,36 @@ object ClanUtils {
 
   }
 
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-  def saveCurrentClansInFile = {
-    val current = ClanList.topClansCurrentStats
-    FILE_WITH_LAST_CLAN_STATS.createNewFile()
-    FileOps.printToFile(FILE_WITH_LAST_CLAN_STATS) {
-      p =>
-        current.foreach(clan => {
-          p.println(s"${
-            clan.clanId
-          },${
-            clan.membersCount
-          },${
-            clan.skirmishBattles
-          },${
-            clan.skirmishBattlesWins
-          }")
-        })
-    }
+  def saveCurrentClansInFile() = {
+    val file = new File(FILE_WITH_LAST_CLAN_STATS)
+    file.createNewFile()
+    ClanList.clanSkirmishesStats.map(res => {
+      FileOps.printToFile(file) {
+        p =>
+          res.foreach(clan => {
+            p.println(s"${
+              clan.clanId
+            },${
+              clan.membersCount
+            },${
+              clan.skirmish.battles6
+            },${
+              clan.skirmish.wins6
+            },${
+              clan.skirmish.battles8
+            },${
+              clan.skirmish.wins8
+            },${
+              clan.skirmish.battles10
+            },${
+              clan.skirmish.wins10
+            }")
+          })
+      }
+    })
+
   }
 
 }

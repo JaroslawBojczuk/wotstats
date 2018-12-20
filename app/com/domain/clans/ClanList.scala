@@ -1,25 +1,31 @@
 package com.domain.clans
 
+import java.io.File
+
 import com.domain.Constants
-import com.domain.presentation.model.ClanSummary
+import com.domain.presentation.model.{ClanSkirmish, ClanSummary}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import play.libs.Json
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import Constants._
+import play.api.Logger
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object ClanList {
 
-  private val CLAN_LIMIT = 100
+  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=$APPLICATION_ID&rank_field=efficiency&fields=clan_id&limit=$CLAN_LIMIT"
 
-  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=${Constants.APPLICATION_ID}&rank_field=efficiency&fields=clan_id&limit=$CLAN_LIMIT"
+  private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/claninfo/?application_id=$APPLICATION_ID&clan_id=$clanIds"
 
-  private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/claninfo/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanIds"
+  private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=$APPLICATION_ID&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
 
-  private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
+  def clanSkirmishesStats = Future {
 
-  def topClansCurrentStats: Seq[ClanSummary] = {
+    Logger.info("Clan skirmishes stats")
 
     val clansResponse = scala.io.Source.fromURL(url).mkString
     val clansJson = Json.parse(clansResponse)
@@ -43,29 +49,32 @@ object ClanList {
         val tag = clan.findPath("clan_tag").asText()
         val skirmish = clan.findPath("skirmish_statistics")
 
-        val battles = skirmish.findPath("total_8").asInt()
-        val wins = skirmish.findPath("win_8").asInt()
+        val battles6 = skirmish.findPath("total_6").asInt()
+        val wins6 = skirmish.findPath("win_6").asInt()
 
-        ClanSummary(clanId, tag, clanEmblemsData.getOrElse(clanId, ""), clanMembersData.getOrElse(clanId, 0), battles, wins)
+        val battles8 = skirmish.findPath("total_8").asInt()
+        val wins8 = skirmish.findPath("win_8").asInt()
+
+        val battles10 = skirmish.findPath("total_10").asInt()
+        val wins10 = skirmish.findPath("win_10").asInt()
+
+        val clanSkirmish = ClanSkirmish(battles6, wins6, battles8, wins8, battles10, wins10)
+
+        ClanSummary(clanId, tag, clanEmblemsData.getOrElse(clanId, ""), clanMembersData.getOrElse(clanId, 0), clanSkirmish)
       }).toSeq
     }
     ).toSeq
   }
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def topClansCurrentStatsFuture = Future {
-    topClansCurrentStats
-  }
-
   def previousStats: Seq[ClanSummary] = {
 
-    val file = scala.io.Source.fromFile(ClanUtils.FILE_WITH_LAST_CLAN_STATS)
+    val file = scala.io.Source.fromFile(new File(FILE_WITH_LAST_CLAN_STATS))
     val clanStats = file.getLines
 
     val result = clanStats.map(line => {
       val values = line.split(",")
-      ClanSummary(values(0).toInt, "", "", values(1).toInt, values(2).toInt, values(3).toInt)
+      val skirmish = ClanSkirmish(values(2).toInt, values(3).toInt, values(4).toInt, values(5).toInt, values(6).toInt, values(7).toInt)
+      ClanSummary(values(0).toInt, "", "", values(1).toInt, skirmish)
     }).toSeq
 
     result.size
@@ -89,7 +98,9 @@ object ClanList {
       ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmishBattles, cur.skirmishBattles, clanDelta)
     })*/
 
-    topClansCurrentStats.foreach(clan => {
+    import scala.concurrent.duration._
+
+    Await.result(clanSkirmishesStats, 1.minute).foreach(clan => {
 
       println(clan.tag)
 

@@ -15,21 +15,19 @@ class ClanListController @Inject() extends Controller {
 
     val previous = ClanList.previousStats
 
-    val currentFuture = ClanList.topClansCurrentStatsFuture
-
-    val futureRes = currentFuture.map(summary => {
+    ClanList.clanSkirmishesStats.map(summary => {
       summary.map(cur => {
         val prevOpt = previous.find(_.clanId == cur.clanId)
         val clanDelta = prevOpt match {
-          case Some(prev) => Some(ClanDelta(cur.membersCount - prev.membersCount, cur.skirmishBattles - prev.skirmishBattles, cur.skirmishBattlesWins - prev.skirmishBattlesWins))
+          case Some(prev) => Some(ClanDelta(cur.membersCount - prev.membersCount, prev.skirmish, cur.skirmish))
           case _ => None
         }
-        ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmishBattles, cur.skirmishBattlesWins, clanDelta)
+        ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmish, clanDelta)
       }).sortBy(clan => {
         val delta = clan.clanDelta
         if (delta.isDefined) {
-          if(delta.get.skirmishBattles > 0) {
-            -(delta.get.skirmishBattles * 100) // clan with battles go on top
+          if (delta.get.totalBattles > 0) {
+            -(delta.get.totalBattles * 100) // clan with battles go on top
           } else {
             -clan.totalWinRatio
           }
@@ -37,9 +35,7 @@ class ClanListController @Inject() extends Controller {
           0
         }
       })
-    })
-
-    futureRes.map { res => Ok(views.html.clans(res)) }
+    }).map { res => Ok(views.html.clans(res)) }
 
   }
 }
