@@ -2,6 +2,7 @@ package com.domain.clans
 
 import java.io.File
 import java.nio.file.{Files, Paths}
+
 import com.domain.Constants
 import com.domain.presentation.model.{ClanDetails, ClanMemberDetails, StrongholdBattle}
 import com.domain.wn8.UserWn8
@@ -15,6 +16,8 @@ import play.libs.Json
 import scala.collection.mutable
 import scala.io.{Codec, Source}
 import Constants._
+
+import scala.concurrent.Future
 
 object ClanUtils {
 
@@ -112,34 +115,31 @@ object ClanUtils {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  def saveCurrentClansInFile() = {
+  def saveCurrentClansInFile() = Future {
     val file = new File(FILE_WITH_LAST_CLAN_STATS)
     file.createNewFile()
-    ClanList.clanSkirmishesStats.map(res => {
-      FileOps.printToFile(file) {
-        p =>
-          res.foreach(clan => {
-            p.println(s"${
-              clan.clanId
-            },${
-              clan.membersCount
-            },${
-              clan.skirmish.battles6
-            },${
-              clan.skirmish.wins6
-            },${
-              clan.skirmish.battles8
-            },${
-              clan.skirmish.wins8
-            },${
-              clan.skirmish.battles10
-            },${
-              clan.skirmish.wins10
-            }")
-          })
-      }
-    })
-
+    FileOps.printToFile(file) {
+      p =>
+        ClanList.clanSkirmishesStats.foreach(clan => {
+          p.println(s"${
+            clan.clanId
+          },${
+            clan.membersCount
+          },${
+            clan.skirmish.battles6
+          },${
+            clan.skirmish.wins6
+          },${
+            clan.skirmish.battles8
+          },${
+            clan.skirmish.wins8
+          },${
+            clan.skirmish.battles10
+          },${
+            clan.skirmish.wins10
+          }")
+        })
+    }
   }
 
 }

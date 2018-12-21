@@ -21,4 +21,6 @@ object Constants {
 
   val WG_REDIRECT_TO: String = Config.getString("wg_redirect")
 
+  val CLAN_SKIRMISH_PROBING_THRESHOLD: Int = Config.getInt("clan_skirmish_probing_threshold")
+
 }
