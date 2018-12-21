@@ -1,22 +1,22 @@
 package controllers
 
-import javax.inject._
+import java.util.concurrent.Executors
 
 import com.domain.clans.ClanUtils
-import com.domain.wn8.UserWn8
-import play.api.Logger
+import javax.inject._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ClanDetailsController @Inject() extends Controller {
 
-  def details(clanId: String) = Action { implicit request =>
+  private val execContext = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(5))
 
-    Logger.logger.debug(s"Gathering details for clan id: $clanId")
-
-    val clanDetails = ClanUtils.getClanDetails(clanId)
-
-    Ok(views.html.clan_details(clanDetails))
-
+  def details(clanId: String): Action[AnyContent] = Action.async { implicit request =>
+    Future(ClanUtils.getClanDetails(clanId))(execContext).map(res => {
+      Ok(views.html.clan_details(res))
+    })
   }
 }

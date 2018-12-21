@@ -16,6 +16,7 @@ import play.libs.Json
 import scala.collection.mutable
 import scala.io.{Codec, Source}
 import Constants._
+import play.api.Logger
 
 import scala.concurrent.Future
 
@@ -37,6 +38,9 @@ object ClanUtils {
   }
 
   def getClanDetails(clanId: String): ClanDetails = {
+
+    Logger.debug(s"Gathering details for clan id: $clanId")
+
     val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId))(Codec.UTF8).mkString
     val clanJson = Json.parse(clanResponse)
 
