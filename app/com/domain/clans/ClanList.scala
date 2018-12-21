@@ -2,18 +2,14 @@ package com.domain.clans
 
 import java.io.File
 
-import com.domain.Constants
+import com.domain.Constants._
 import com.domain.presentation.model.{ClanSkirmish, ClanSummary}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import play.api.Logger
 import play.libs.Json
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{Await, Future}
-import Constants._
-import play.api.Logger
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object ClanList {
 
@@ -23,9 +19,9 @@ object ClanList {
 
   private def urlClanDetails(clanIds: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=$APPLICATION_ID&fields=clan_id%2Cmembers_count%2Cemblems.x24&clan_id=$clanIds"
 
-  def clanSkirmishesStats = Future {
+  def clanSkirmishesStats: Seq[ClanSummary] = {
 
-    Logger.info("Clan skirmishes stats")
+    Logger.info("Getting clan skirmishes stats")
 
     val clansResponse = scala.io.Source.fromURL(url).mkString
     val clansJson = Json.parse(clansResponse)
@@ -62,11 +58,12 @@ object ClanList {
 
         ClanSummary(clanId, tag, clanEmblemsData.getOrElse(clanId, ""), clanMembersData.getOrElse(clanId, 0), clanSkirmish)
       }).toSeq
-    }
-    ).toSeq
+    }).toSeq
   }
 
   def previousStats: Seq[ClanSummary] = {
+
+    Logger.debug("Refreshing data from clans skirmishes file")
 
     val file = scala.io.Source.fromFile(new File(FILE_WITH_LAST_CLAN_STATS))
     val clanStats = file.getLines
@@ -98,9 +95,7 @@ object ClanList {
       ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmishBattles, cur.skirmishBattles, clanDelta)
     })*/
 
-    import scala.concurrent.duration._
-
-    Await.result(clanSkirmishesStats, 1.minute).foreach(clan => {
+    clanSkirmishesStats.foreach(clan => {
 
       println(clan.tag)
 
