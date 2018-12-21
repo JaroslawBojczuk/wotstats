@@ -23,4 +23,6 @@ object Constants {
 
   val CLAN_SKIRMISH_PROBING_THRESHOLD: Int = Config.getInt("clan_skirmish_probing_threshold")
 
+  val CLAN_SKIRMISH_FILE_PROBING_THRESHOLD: Int = Config.getInt("clan_skirmish_probing_threshold")
+
 }

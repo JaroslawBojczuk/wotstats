@@ -1,58 +1,71 @@
 package controllers
 
+import java.util.concurrent.Executors
+
 import com.domain.Constants._
-import javax.inject._
 import com.domain.clans.ClanList
 import com.domain.presentation.model.{ClanDelta, ClanSummary}
+import javax.inject._
 import play.api.Logger
 import play.api.mvc._
 
-import scala.concurrent.Future
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ClanListController @Inject() extends Controller {
 
-  private var previous = ClanList.previousStats
+  def list: Action[AnyContent] = Action.async { implicit request =>
+    Future(Ok(views.html.clans(clanDeltaCached)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+  }
 
-  private var clanDeltaTimestamp: Long = 0
+  Future {
+    while (true) {
+      Logger.debug("Refreshing clan skirmishes")
+      current = ClanList.clanSkirmishesStats
+      refreshClanDelta()
+      Logger.debug("Clan skirmishes refreshed")
+      Thread.sleep(CLAN_SKIRMISH_PROBING_THRESHOLD)
+    }
+  }(ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1)))
+
+  Future {
+    while (true) {
+      Logger.debug("Refreshing clan skirmishes from file")
+      previous = ClanList.previousStats
+      Logger.debug("Clan skirmishes from file refreshed")
+      Thread.sleep(CLAN_SKIRMISH_FILE_PROBING_THRESHOLD)
+    }
+  }(ExecutionContext.fromExecutor(Executors.newFixedThreadPool(1)))
+
+  private var previous = Seq.empty[ClanSummary]
+
+  private var current = Seq.empty[ClanSummary]
 
   private var clanDeltaCached = Seq.empty[ClanSummary]
 
-  private def getClanSkirmishesStats = {
-    if(System.currentTimeMillis() - clanDeltaTimestamp > CLAN_SKIRMISH_PROBING_THRESHOLD)  {
-      Logger.debug("Refreshing clan skirmishes")
-      clanDeltaTimestamp = System.currentTimeMillis()
-      calculateClanDelta.onComplete(r => {
-        previous = ClanList.previousStats
-        clanDeltaCached = r.get
-        Logger.debug("Clan skirmishes refreshed")
-      })
-    }
-    clanDeltaCached
-  }
+  private def refreshClanDelta(): Unit = clanDeltaCached = calculateClanDelta(previous, current)
 
-  private def calculateClanDelta = Future { ClanList.clanSkirmishesStats.map(cur => {
-    val prevOpt = previous.find(_.clanId == cur.clanId)
-    val clanDelta = prevOpt match {
-      case Some(prev) => Some(ClanDelta(cur.membersCount - prev.membersCount, prev.skirmish, cur.skirmish))
-      case _ => None
-    }
-    ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmish, clanDelta)
-  }).sortBy(clan => {
-    val delta = clan.clanDelta
-    if (delta.isDefined) {
-      if (delta.get.totalBattles > 0) {
-        -(delta.get.totalBattles * 100) // clan with battles go on top
-      } else {
-        -clan.totalWinRatio
+  private def calculateClanDelta(previous: Seq[ClanSummary], current: Seq[ClanSummary]): Seq[ClanSummary] = {
+    current.map(cur => {
+      val prevOpt = previous.find(_.clanId == cur.clanId)
+      val clanDelta = prevOpt match {
+        case Some(prev) => Some(ClanDelta(cur.membersCount - prev.membersCount, prev.skirmish, cur.skirmish))
+        case _ => None
       }
-    } else {
-      0
-    }
-  })}
-
-  def list: Action[AnyContent] = Action.async { implicit request =>
-    Future(Ok(views.html.clans(getClanSkirmishesStats)))
+      ClanSummary(cur.clanId, cur.tag, cur.emblem, cur.membersCount, cur.skirmish, clanDelta)
+    }).sortBy(clan => {
+      val delta = clan.clanDelta
+      if (delta.isDefined) {
+        if (delta.get.totalBattles > 0) {
+          -(delta.get.totalBattles * 100) // clan with battles go on top
+        } else {
+          -clan.totalWinRatio
+        }
+      } else {
+        0
+      }
+    })
   }
+
+
 }

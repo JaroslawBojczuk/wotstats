@@ -123,7 +123,6 @@ object UserWn8 {
 
   private def calculateWn8(accountId: String): UserWn8WithBattles = {
 
-    Logger.logger.debug(s"Calculating wn8 for user: $accountId")
     val tanks = accountTanks(accountId)
     val expectedValues = tanksExpectedValues()
 
