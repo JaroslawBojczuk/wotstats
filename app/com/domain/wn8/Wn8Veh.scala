@@ -26,11 +26,12 @@ object Wn8Veh {
       val currentTankId = elem("tank_id").toString
       val currentTankStats = elem.get("all")
 
-      val tankName = tankDetails.get(currentTankId)("name").str
-      val tankLevel = tankDetails.get(currentTankId)("tier").num
       val tankStatsMap = currentTankStats.get.asInstanceOf[Map[String, BigInt]]
 
       if (tanks.get(Integer.valueOf(currentTankId.toString)).isDefined && tankStatsMap("battles").toDouble != 0) {
+        val tankName= tankDetails.get(currentTankId)("name").str
+        val tankLevel = tankDetails.get(currentTankId)("tier").num
+
         val damage: Double = tankStatsMap("damage_dealt").toDouble
         val spot: Double = tankStatsMap("spotted").toDouble
         val frags: Double = tankStatsMap("frags").toDouble
@@ -45,7 +46,7 @@ object Wn8Veh {
         val avg_defence: Double = defence / battles
         val avg_wins: Double = BigDecimal((wins / battles) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
 
-        val expectedValues = tanks.get(Integer.valueOf(currentTankId.toString)).get
+        val expectedValues = tanks(Integer.valueOf(currentTankId.toString))
 
         val expFrag: Double = expectedValues.frag
         val expDmg: Double = expectedValues.dmg
