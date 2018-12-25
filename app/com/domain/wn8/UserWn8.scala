@@ -1,7 +1,7 @@
 package com.domain.wn8
 
 import java.io.File
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Paths}
 
 import com.domain.Constants
 import com.domain.clans.ClanUtils
@@ -84,8 +84,8 @@ object UserWn8 {
     val expectedValues = tanksExpectedValues
 
     tanks.flatMap(currentTank => {
-      val currentTankId = currentTank.get("tank_id").get.toString.toInt
-      val currentTankStatsMap = currentTank.get("all").get.asInstanceOf[Map[String, BigInt]]
+      val currentTankId = currentTank("tank_id").toString.toInt
+      val currentTankStatsMap = currentTank("all").asInstanceOf[Map[String, BigInt]]
       expectedValues.get(currentTankId) match {
         case Some(vehicleExpectedValues) => {
           tankAvgValues(currentTankId, currentTankStatsMap) match {
@@ -100,15 +100,7 @@ object UserWn8 {
 
   case class UserWn8WithBattles(wn8: Double, battles: Int)
 
-  private def cachedWn8InFile(userTag: String): Option[UserWn8WithBattles] = {
-    if (Files.exists(Paths.get(userFilePath(userTag)))) {
-      val wn8AndBattles = Source.fromFile(userFilePath(userTag)).mkString.split(";")
-      Some(UserWn8WithBattles(wn8AndBattles(0).toDouble, wn8AndBattles(1).toInt))
-    }
-    else None
-  }
-
-  def getAccountCachedWn8(accountId: String) = {
+  def getAccountCachedWn8(accountId: String): UserWn8WithBattles = {
     cachedWn8InFile(accountId) match {
       case Some(data) => data
       case _ => {
@@ -117,21 +109,27 @@ object UserWn8 {
         data
       }
     }
+  }
 
+  private def cachedWn8InFile(userTag: String): Option[UserWn8WithBattles] = {
+    if (Files.exists(Paths.get(userFilePath(userTag)))) {
+      val wn8AndBattles = Source.fromFile(userFilePath(userTag)).mkString.split(";")
+      Some(UserWn8WithBattles(wn8AndBattles(0).toDouble, wn8AndBattles(1).toInt))
+    }
+    else None
   }
 
   private def calculateWn8(accountId: String): UserWn8WithBattles = {
 
     val tanks = accountTanks(accountId)
-    val expectedValues = tanksExpectedValues
 
     var totalUserBattles: Int = 0
 
     val totalExpected = tanks.par.flatMap(currentTank => {
-      val currentTankId = currentTank.get("tank_id").get.toString.toInt
-      val tankBattles = currentTank.get("all").get.asInstanceOf[Map[String, BigInt]].get("battles").get.toDouble
+      val currentTankId = currentTank("tank_id").toString.toInt
+      val tankBattles = currentTank("all").asInstanceOf[Map[String, BigInt]]("battles").toDouble
       totalUserBattles += tankBattles.toInt
-      expectedValues.get(currentTankId) match {
+      tanksExpectedValues.get(currentTankId) match {
         case Some(expVal) => Some(Vehicle(expVal.IDNum, expVal.frag * tankBattles, expVal.dmg * tankBattles, expVal.spot * tankBattles, expVal.defence * tankBattles, 0.01 * expVal.win * tankBattles))
         case _ => None
       }
@@ -140,15 +138,15 @@ object UserWn8 {
     })
 
     val totalAccount = tanks.par.flatMap(currentTank => {
-      val currentTankId = currentTank.get("tank_id").get.toString.toInt
-      val currentTankStatsMap = currentTank.get("all").get.asInstanceOf[Map[String, BigInt]]
-      expectedValues.get(currentTankId) match {
+      val currentTankId = currentTank("tank_id").toString.toInt
+      val currentTankStatsMap = currentTank("all").asInstanceOf[Map[String, BigInt]]
+      tanksExpectedValues.get(currentTankId) match {
         case Some(_) => {
-          val damage: Double = currentTankStatsMap.get("damage_dealt").get.toDouble
-          val spot: Double = currentTankStatsMap.get("spotted").get.toDouble
-          val frags: Double = currentTankStatsMap.get("frags").get.toDouble
-          val defence: Double = currentTankStatsMap.get("dropped_capture_points").get.toDouble
-          val wins: Double = currentTankStatsMap.get("wins").get.toDouble
+          val damage: Double = currentTankStatsMap("damage_dealt").toDouble
+          val spot: Double = currentTankStatsMap("spotted").toDouble
+          val frags: Double = currentTankStatsMap("frags").toDouble
+          val defence: Double = currentTankStatsMap("dropped_capture_points").toDouble
+          val wins: Double = currentTankStatsMap("wins").toDouble
           Some(Vehicle(currentTankId, frags, damage, spot, defence, wins))
         }
         case _ => None

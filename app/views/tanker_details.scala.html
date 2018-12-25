@@ -1,4 +1,4 @@
-@(tanker: Option[com.domain.presentation.model.TankerDetails])(implicit request: RequestHeader)
+@(tanker: Option[com.domain.presentation.model.TankerDetails], t10wn8: Double)(implicit request: RequestHeader)
 
 @main("Welcome to Play", request.session.get("user")) {
 @if(tanker.isDefined) {
@@ -10,6 +10,7 @@
     <tr><td align="right">Win ratio:</td><td>@{"%.2f".format(tanker.get.winratio)}%</td></tr>
     <tr><td align="right">Spots:</td><td>@{"%.2f".format(tanker.get.avgSpot)}</td></tr>
     <tr><td align="right">Frags:</td><td>@{"%.2f".format(tanker.get.avgFrags)}</td></tr>
+    <tr><td align="right">T10 Wn8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(t10wn8)">@{"%.2f".format(t10wn8)}</td></tr>
     <tr><td align="right">Wn8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@tanker.get.wn8</td></tr>
     <tr><td align="right">Tier:</td><td>@{"%.2f".format(tanker.get.avgTier)}</td></tr>
 </table>
@@ -28,11 +29,11 @@ $(function() {
         <th align="left">Tank&nbsp;</th>
         <th>Tier</th>
         <th>Battles</th>
-        <th>Frags</th>
-        <th>Spot</th>
-        <th>Wins</th>
-        <th>Damage</th>
-        <th>Average exp</th>
+        <th>Ø Frags</th>
+        <th>Ø Spot</th>
+        <th>% Wins</th>
+        <th>Ø Dmg</th>
+        <th>Ø Exp</th>
         <th>Wn8</th>
     </thead>
     @for(tank <- tanker.get.tanks) {
@@ -44,7 +45,7 @@ $(function() {
         <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
         <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
         <td align="center">@{"%.2f".format(tank.avgWins)}</td>
-        <td align="right">@{"%.2f".format(tank.avgDmg)}</td>
+        <td align="right" title="Expected: @tank.expDmg">@{"%.2f".format(tank.avgDmg)}</td>
         <td align="right">@{"%.0f".format(tank.avgXp)}</td>
         <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.2f".format(tank.wn8)}</td>
     </tr>

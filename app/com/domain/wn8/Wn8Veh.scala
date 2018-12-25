@@ -73,6 +73,7 @@ object Wn8Veh {
 
         Some(TankStats(tankName, imgPath, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8,
           BigDecimal(avg_damage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+          BigDecimal(expDmg).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
           BigDecimal(avg_spot).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
           BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble, avg_wins, averageXp))
 
