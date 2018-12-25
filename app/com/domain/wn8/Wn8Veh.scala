@@ -10,7 +10,7 @@ import scala.util.Try
 
 object Wn8Veh {
 
-  private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier"
+  private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier,images.contour_icon"
   private val tankDetails = ujson.read(requests.get(tankDetailsUrl).text).obj.get("data")
 
   def calculate(account_id: String): List[TankStats] = {
@@ -31,6 +31,7 @@ object Wn8Veh {
       if (tanks.get(Integer.valueOf(currentTankId.toString)).isDefined && tankStatsMap("battles").toDouble != 0) {
         val tankName= tankDetails.get(currentTankId)("name").str
         val tankLevel = tankDetails.get(currentTankId)("tier").num
+        val imgPath = tankDetails.get(currentTankId)("images")("contour_icon").str
 
         val damage: Double = tankStatsMap("damage_dealt").toDouble
         val spot: Double = tankStatsMap("spotted").toDouble
@@ -70,7 +71,7 @@ object Wn8Veh {
 
         val humanWN8: Double = BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 
-        Some(TankStats(tankName, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8,
+        Some(TankStats(tankName, imgPath, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8,
           BigDecimal(avg_damage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
           BigDecimal(avg_spot).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
           BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble, avg_wins, averageXp))

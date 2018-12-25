@@ -18,12 +18,13 @@
 
 <script>
 $(function() {
-    $("#tanks").tablesorter( {sortList: [[1,0],[8,0]]} );
+    $("#tanks").tablesorter( {sortList: [[2,0],[9,0]]} );
 });
 </script>
 
 <table cellpadding="0" cellspacing="0" align="center" id="tanks" class="user_tanks">
     <thead>
+        <th></th>
         <th align="left">Tank&nbsp;</th>
         <th>Tier</th>
         <th>Battles</th>
@@ -36,6 +37,7 @@ $(function() {
     </thead>
     @for(tank <- tanker.get.tanks) {
     <tr>
+        <td align="center"><img src="@tank.imgPath"/></td>
         <td align="left">@tank.name&nbsp;</td>
         <td align="center">@tank.tier</td>
         <td align="center">@tank.battles</td>
