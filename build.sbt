@@ -16,6 +16,9 @@ libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.3.0"
 
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.0"
 
+libraryDependencies += "com.lihaoyi" %% "requests" % "0.1.4"
+libraryDependencies += "com.lihaoyi" %% "upickle" % "0.7.1"
+
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.example.controllers._"
 

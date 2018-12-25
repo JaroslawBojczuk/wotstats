@@ -10,33 +10,34 @@ import scala.util.Try
 
 object Wn8Veh {
 
-  def calculate(account_id: String) = {
+  private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier"
+  private val tankDetails = ujson.read(requests.get(tankDetailsUrl).text).obj.get("data")
 
-    val tanks: Map[Int, Vehicle] = UserWn8.tanksExpectedValues()
+  def calculate(account_id: String): List[TankStats] = {
 
-    val tanksDetailsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/encyclopedia/tanks/?application_id=${Constants.APPLICATION_ID}").mkString
+    val tanks: Map[Int, Vehicle] = UserWn8.tanksExpectedValues
     val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$account_id").mkString
 
-    val parsedTanksDetails: JValue = parse(tanksDetailsResponse)
-    val parsedTanksStats: JValue = render((parse(tanksStatsResponse) \ "data" \ s"$account_id"))
+    val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$account_id")
     val tanksStatsAsList = parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]
 
     val res = tanksStatsAsList.flatMap(elem => {
 
-      val currentTankId: Any = elem.get("tank_id").get
+      val currentTankId = elem("tank_id").toString
       val currentTankStats = elem.get("all")
 
-      val tankName = render((parsedTanksDetails \ "data" \ s"$currentTankId" \ "name_i18n")).values.toString
-      val tankLevel = render((parsedTanksDetails \ "data" \ s"$currentTankId" \ "level")).values.toString
+      val tankName = tankDetails.get(currentTankId)("name").str
+      val tankLevel = tankDetails.get(currentTankId)("tier").num
       val tankStatsMap = currentTankStats.get.asInstanceOf[Map[String, BigInt]]
 
-      if (tanks.get(Integer.valueOf(currentTankId.toString)).isDefined && tankStatsMap.get("battles").get.toDouble != 0) {
-        val damage: Double = tankStatsMap.get("damage_dealt").get.toDouble
-        val spot: Double = tankStatsMap.get("spotted").get.toDouble
-        val frags: Double = tankStatsMap.get("frags").get.toDouble
-        val defence: Double = tankStatsMap.get("dropped_capture_points").get.toDouble
-        val wins: Double = tankStatsMap.get("wins").get.toDouble
-        val battles: Double = tankStatsMap.get("battles").get.toDouble
+      if (tanks.get(Integer.valueOf(currentTankId.toString)).isDefined && tankStatsMap("battles").toDouble != 0) {
+        val damage: Double = tankStatsMap("damage_dealt").toDouble
+        val spot: Double = tankStatsMap("spotted").toDouble
+        val frags: Double = tankStatsMap("frags").toDouble
+        val defence: Double = tankStatsMap("dropped_capture_points").toDouble
+        val wins: Double = tankStatsMap("wins").toDouble
+        val battles: Double = tankStatsMap("battles").toDouble
+        val averageXp: Double = tankStatsMap("battle_avg_xp").toDouble
 
         val avg_damage: Double = damage / battles
         val avg_spot: Double = spot / battles
@@ -71,7 +72,7 @@ object Wn8Veh {
         Some(TankStats(tankName, battles.toInt, Try(tankLevel.toInt).getOrElse(0), humanWN8,
           BigDecimal(avg_damage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
           BigDecimal(avg_spot).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
-          BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble, avg_wins))
+          BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble, avg_wins, averageXp))
 
       } else {
         None

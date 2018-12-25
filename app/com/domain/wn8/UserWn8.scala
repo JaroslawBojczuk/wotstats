@@ -8,7 +8,6 @@ import com.domain.clans.ClanUtils
 import io.FileOps
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
-import play.api.Logger
 
 import scala.collection.JavaConverters._
 import scala.io.Source
@@ -18,7 +17,7 @@ object UserWn8 {
 
   private def userFilePath(userId: String): String = FOLDER_WITH_USERS_WN8 + userId
 
-  def tanksExpectedValues(path: Path = EXPECTED_TANKS_VALUES_CSV_PATH): Map[Int, Vehicle] = Files.readAllLines(path).asScala.map(line => {
+  val tanksExpectedValues: Map[Int, Vehicle] = Files.readAllLines(EXPECTED_TANKS_VALUES_CSV_PATH).asScala.map(line => {
     val tank = line.split(",")
     tank(0) match {
       case "tank_id" => (0, Vehicle(0, 1, 1, 1, 1, 1))
@@ -82,7 +81,7 @@ object UserWn8 {
 
   def accountTanksWn8s(accountId: String): List[VehicleWn8] = {
     val tanks = accountTanks(accountId)
-    val expectedValues = tanksExpectedValues()
+    val expectedValues = tanksExpectedValues
 
     tanks.flatMap(currentTank => {
       val currentTankId = currentTank.get("tank_id").get.toString.toInt
@@ -124,7 +123,7 @@ object UserWn8 {
   private def calculateWn8(accountId: String): UserWn8WithBattles = {
 
     val tanks = accountTanks(accountId)
-    val expectedValues = tanksExpectedValues()
+    val expectedValues = tanksExpectedValues
 
     var totalUserBattles: Int = 0
 
