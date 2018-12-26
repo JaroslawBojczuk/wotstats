@@ -13,7 +13,7 @@ import scala.collection.JavaConverters._
 
 object ClanList {
 
-  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=$APPLICATION_ID&rank_field=efficiency&fields=clan_id&limit=$CLAN_LIMIT"
+  private def url = s"https://api.worldoftanks.eu/wot/clanratings/top/?application_id=$APPLICATION_ID&rank_field=global_rating_weighted_avg&fields=clan_id&limit=$CLAN_LIMIT"
 
   private def urlClanSkirmish(clanIds: String) = s"https://api.worldoftanks.eu/wot/stronghold/claninfo/?application_id=$APPLICATION_ID&clan_id=$clanIds"
 
