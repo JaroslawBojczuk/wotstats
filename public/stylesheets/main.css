@@ -5,16 +5,16 @@ table.vehicles {
 }
 
 table.vehicles tr:hover td { background-color: black; }
-table.vehicles tr.super_unicum { background-color: #8225ad; }
-table.vehicles tr.unicum { background-color: #c64cff; }
-table.vehicles tr.great { background-color: #00a0b8; }
-table.vehicles tr.very_good { background-color: #2ae4ff; }
-table.vehicles tr.good { background-color: #459300; }
-table.vehicles tr.above_average { background-color: #77e812; }
-table.vehicles tr.average { background-color: #e6df27; }
-table.vehicles tr.below_average { background-color: #ff8a00; }
-table.vehicles tr.bad { background-color: #f11919; }
-table.vehicles tr.very_bad { background-color: #000000; }
+table.vehicles tr.super_unicum { background-color: #401070; }
+table.vehicles tr.unicum { background-color: #793DB6; }
+table.vehicles tr.great { background-color: #3972C6; }
+table.vehicles tr.very_good { background-color: #4099BF; }
+table.vehicles tr.good { background-color: #4D7326; }
+table.vehicles tr.above_average { background-color: #849B24; }
+table.vehicles tr.average { background-color: #CCB800; }
+table.vehicles tr.below_average { background-color: #CC7A00; }
+table.vehicles tr.bad { background-color: #CD3333; }
+table.vehicles tr.very_bad { background-color: #930D0D; }
 
 table.clan_skirmishes {
     width: 60%;
@@ -32,27 +32,27 @@ a:visited { background-color:transparent; text-decoration:none }
 a:hover   { color: red; background-color:transparent; text-decoration:none }
 a:active  { background-color:transparent; text-decoration:none }
 
-.super_unicum { font-weight: bold; color: #8225ad; }
-.unicum { font-weight: bold; color: #c64cff; }
-.great { font-weight: bold; color: #00a0b8; }
-.very_good { font-weight: bold; color: #2ae4ff; }
-.good { font-weight: bold; color: #459300; }
-.above_average { font-weight: bold; color: #77e812; }
-.average { font-weight: bold; color: #e6df27; }
-.below_average { font-weight: bold; color: #ff8a00; }
-.bad { font-weight: bold; color: #f11919; }
-.very_bad { font-weight: bold; color: #000000; }
+.super_unicum { font-weight: bold; color: #401070; }
+.unicum { font-weight: bold; color: #793DB6; }
+.great { font-weight: bold; color: #3972C6; }
+.very_good { font-weight: bold; color: #4099BF; }
+.good { font-weight: bold; color: #4D7326; }
+.above_average { font-weight: bold; color: #849B24; }
+.average { font-weight: bold; color: #CCB800; }
+.below_average { font-weight: bold; color: #CC7A00; }
+.bad { font-weight: bold; color: #CD3333; }
+.very_bad { font-weight: bold; color: #930D0D; }
 
-.bg_super_unicum { background-color: #8225ad; color: white;}
-.bg_unicum { background-color: #c64cff; color: white;}
-.bg_great { background-color: #00a0b8; color: white;}
-.bg_very_good { background-color: #2ae4ff; color: white;}
-.bg_good { background-color: #459300; color: white;}
-.bg_above_average { background-color: #77e812; color: white;}
-.bg_average { background-color: #e6df27; color: white;}
-.bg_below_average { background-color: #ff8a00; color: white;}
-.bg_bad { background-color: #f11919; color: white;}
-.bg_very_bad { background-color: #000000; color: white;}
+.bg_super_unicum { background-color: #401070; color: white;}
+.bg_unicum { background-color: #793DB6; color: white;}
+.bg_great { background-color: #3972C6; color: white;}
+.bg_very_good { background-color: #4099BF; color: white;}
+.bg_good { background-color: #4D7326; color: white;}
+.bg_above_average { background-color: #849B24; color: white;}
+.bg_average { background-color: #CCB800; color: white;}
+.bg_below_average { background-color: #CC7A00; color: white;}
+.bg_bad { background-color: #CD3333; color: white;}
+.bg_very_bad { background-color: #930D0D; color: white;}
 
 .bg_super_unicum:hover { background-color: white; color: black; cursor: pointer}
 .bg_unicum:hover { background-color: white; color: black; cursor: pointer}
@@ -106,12 +106,13 @@ ul.topnav li a:hover {background-color: #555;}
 ul.topnav li.icon {display: none;}
 
 table.user_tanks th {
-    padding: 5px;
+    padding: 10px;
 }
 
 table.user_tanks td {
     border-bottom: 1px solid black;
-    padding: 5px;
+    padding-right: 10px;
+    padding-left: 10px;
 }
 
 table.user_tanks tr:hover {
@@ -120,7 +121,7 @@ table.user_tanks tr:hover {
 
 table.members td {
     border-bottom: 1px solid black;
-    padding: 5px;
+    padding: 8px;
 }
 
 table.members tr:hover {

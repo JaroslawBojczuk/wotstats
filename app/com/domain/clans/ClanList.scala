@@ -99,7 +99,7 @@ object ClanList {
 
       println(clan.tag)
 
-      if (!clan.tag.equals("CSA") && !clan.tag.equals("CSOH")) {
+      if (clan.tag.equals("9-TDA")) {
         try {
           val members = ClanUtils.getClanDetails(clan.clanId.toString).members.map(_.accountId).mkString("%2C")
           val clansResponse = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/account/info/?application_id=c0a88d6d3b5657d6750bd219d55fb550&account_id=$members&fields=ban_time").mkString
@@ -113,7 +113,7 @@ object ClanList {
             }
           })
         } catch {
-          case _: Throwable => println("err")
+          case e: Throwable => e.printStackTrace()
         }
       }
     })

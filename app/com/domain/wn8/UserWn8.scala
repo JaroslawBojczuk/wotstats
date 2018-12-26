@@ -123,6 +123,8 @@ object UserWn8 {
 
     val tanks = accountTanks(accountId)
 
+    if(tanks == null) return UserWn8WithBattles(0, 0)
+
     var totalUserBattles: Int = 0
 
     val totalExpected = tanks.par.flatMap(currentTank => {
