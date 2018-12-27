@@ -1,4 +1,4 @@
-@import com.domain.clans.ClanUtils
+@import com.domain.wn8.ClanWn8
 @(clans: Seq[com.domain.presentation.model.ClanSummary])(implicit request: RequestHeader)
 
 @main("Clans", request.session.get("user")) {
@@ -18,11 +18,11 @@ $(function() {
     <tr class="hoverable">
         <td><img src="@clan.emblem"></td>
         <td class="clan_tag">
-            <a class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanUtils.getClanCachedWn8(clan.tag).getOrElse("0").toString)" href="@routes.ClanDetailsController.details(clan.clanId.toString)">@clan.tag</a>
+            <a class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanWn8.getClanCachedWn8(clan.tag).getOrElse("0").toString)" href="@routes.ClanDetailsController.details(clan.clanId.toString)">@clan.tag</a>
         </td>
         <td>
-            <span class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanUtils.getClanCachedWn8(clan.tag).getOrElse("0").toString)">
-            @ClanUtils.getClanCachedWn8(clan.tag).getOrElse("0").toString
+            <span class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanWn8.getClanCachedWn8(clan.tag).getOrElse("0").toString)">
+            @{"%.0f".format(ClanWn8.getClanCachedWn8(clan.tag).getOrElse(0d))}
             </span>
         </td>
         @if(clan.clanDelta.isDefined && clan.clanDelta.get.membersCount != 0) {
@@ -43,7 +43,7 @@ $(function() {
          <td><span style="font-size: 50%">(@clan.clanDelta.get.wins6 / @clan.clanDelta.get.wins8 / @clan.clanDelta.get.wins10)</span></td>
          <td class="@com.domain.presentation.model.ColorHelper.skirmishWinRatio(clan.clanDelta.get.winRatio)">@clan.clanDelta.get.winRatio.toInt%</td>
         } else {
-         <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+         <td align="right">-</td><td align="right">-</td><td>-</td><td>-</td><td>-</td>
         }
         <td>@clan.skirmish.totalBattles</td>
         <td>@clan.skirmish.totalWins</td>

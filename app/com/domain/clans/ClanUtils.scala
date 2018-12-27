@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths}
 
 import com.domain.Constants
 import com.domain.presentation.model.{ClanDetails, ClanMemberDetails, StrongholdBattle}
-import com.domain.wn8.UserWn8
+import com.domain.wn8.{ClanWn8, UserWn8}
 import com.domain.wn8.UserWn8.UserWn8WithBattles
 import com.fasterxml.jackson.databind.JsonNode
 import io.FileOps
@@ -14,7 +14,7 @@ import org.json4s.jackson.JsonMethods._
 import play.libs.Json
 
 import scala.collection.mutable
-import scala.io.{Codec, Source}
+import scala.io.Codec
 import Constants._
 import play.api.Logger
 
@@ -27,8 +27,6 @@ object ClanUtils {
   private def clanDetailsUrl(clanId: String) = s"https://api.worldoftanks.eu/wgn/clans/info/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
 
   private def clanShBattlesUrl(clanId: String) = s"https://api.worldoftanks.eu/wot/stronghold/plannedbattles/?application_id=${Constants.APPLICATION_ID}&clan_id=$clanId"
-
-  private def clanFilePath(clanTag: String): String = FOLDER_WITH_CLAN_AVG_WN8 + clanTag
 
   def getClanTag(clanId: String): String = {
     val clanResponse = scala.io.Source.fromURL(clanDetailsUrl(clanId))(Codec.UTF8).mkString
@@ -49,7 +47,7 @@ object ClanUtils {
     val clanTag = data.findPath("tag").asText()
 
     val membersWithWn8 = calculateWn8ForClanMembers(data)
-    val avg = getClanAverageWn8(clanTag, membersWithWn8)
+    val avg = ClanWn8.getClanAverageWn8(clanTag, membersWithWn8)
 
     ClanDetails(clanTag, clanName, avg, membersWithWn8.sortBy(-_.wn8), getClanStrongholdPlannedBattles(clanId))
   }
@@ -72,29 +70,6 @@ object ClanUtils {
     membersList
   }
 
-  private def getClanAverageWn8(clanTag: String, membersList: Seq[ClanMemberDetails]): Double = {
-    getClanCachedWn8(clanTag) match {
-      case Some(average) => average
-      case _ => {
-        val average = calculateAverageWn8(membersList)
-        FileOps.printToFile(new File(clanFilePath(clanTag)))(p => p.print(average))
-        average
-      }
-    }
-  }
-
-  def getClanCachedWn8(clanTag: String): Option[Double] = {
-    if (Files.exists(Paths.get(clanFilePath(clanTag)))) Some(Source.fromFile(clanFilePath(clanTag)).mkString.toDouble)
-    else None
-  }
-
-  private def calculateAverageWn8(membersList: Seq[ClanMemberDetails]): Double = {
-    val totalBattles = membersList.map(_.battles).sum
-    val weightedWn8s = membersList.map(v => (v.wn8 * v.battles) / totalBattles)
-    val avg = BigDecimal(weightedWn8s.sum).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-    avg
-  }
-
   def getClanStrongholdPlannedBattles(clanId: String): Seq[StrongholdBattle] = {
     val clanResponse = scala.io.Source.fromURL(clanShBattlesUrl(clanId))(Codec.UTF8).mkString
     val parsedBattles: JValue = render(parse(clanResponse) \ "data" \ s"$clanId")
@@ -115,35 +90,6 @@ object ClanUtils {
 
     println(getClanTag("500000013"))
 
-  }
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def saveCurrentClansInFile() = Future {
-    val file = new File(FILE_WITH_LAST_CLAN_STATS)
-    file.createNewFile()
-    FileOps.printToFile(file) {
-      p =>
-        ClanList.clanSkirmishesStats.foreach(clan => {
-          p.println(s"${
-            clan.clanId
-          },${
-            clan.membersCount
-          },${
-            clan.skirmish.battles6
-          },${
-            clan.skirmish.wins6
-          },${
-            clan.skirmish.battles8
-          },${
-            clan.skirmish.wins8
-          },${
-            clan.skirmish.battles10
-          },${
-            clan.skirmish.wins10
-          }")
-        })
-    }
   }
 
 }

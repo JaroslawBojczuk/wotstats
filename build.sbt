@@ -19,6 +19,10 @@ libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.12.0"
 libraryDependencies += "com.lihaoyi" %% "requests" % "0.1.4"
 libraryDependencies += "com.lihaoyi" %% "upickle" % "0.7.1"
 
+libraryDependencies += "com.typesafe.slick" %% "slick" % "3.2.3"
+libraryDependencies += "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0"
+libraryDependencies += "org.mariadb.jdbc" % "mariadb-java-client" % "1.5.2"
+
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.example.controllers._"
 

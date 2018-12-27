@@ -1,17 +1,20 @@
 package com.domain.wn8
 
-import java.io.File
-import java.nio.file.{Files, Paths}
+import java.nio.file.Files
 
 import com.domain.Constants
 import com.domain.clans.ClanUtils
-import io.FileOps
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
 import scala.collection.JavaConverters._
-import scala.io.Source
 import Constants._
+import com.domain.db.DB
+import com.domain.db.schema.Tanker
+
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import DB.executionContext
 
 object UserWn8 {
 
@@ -44,12 +47,12 @@ object UserWn8 {
   }
 
   private def tankAvgValues(tankId: Int, values: Map[String, BigInt]): Option[Vehicle] = {
-    val damage: Double = values.get("damage_dealt").get.toDouble
-    val spot: Double = values.get("spotted").get.toDouble
-    val frags: Double = values.get("frags").get.toDouble
-    val defence: Double = values.get("dropped_capture_points").get.toDouble
-    val wins: Double = values.get("wins").get.toDouble
-    val battles: Double = values.get("battles").get.toDouble
+    val damage: Double = values("damage_dealt").toDouble
+    val spot: Double = values("spotted").toDouble
+    val frags: Double = values("frags").toDouble
+    val defence: Double = values("dropped_capture_points").toDouble
+    val wins: Double = values("wins").toDouble
+    val battles: Double = values("battles").toDouble
 
     if (battles > 0) {
       val avg_damage: Double = damage / battles
@@ -101,29 +104,20 @@ object UserWn8 {
   case class UserWn8WithBattles(wn8: Double, battles: Int)
 
   def getAccountCachedWn8(accountId: String): UserWn8WithBattles = {
-    cachedWn8InFile(accountId) match {
-      case Some(data) => data
-      case _ => {
+    val result = DB.TankersDao.findByAccountId(accountId.toInt).map(_.headOption).flatMap {
+      case Some(tanker) => Future(UserWn8WithBattles(tanker.wn8, tanker.battles))
+      case None =>
         val data = calculateWn8(accountId)
-        FileOps.printToFile(new File(userFilePath(accountId)))(_.print(s"${data.wn8};${data.battles}"))
-        data
-      }
+        DB.TankersDao.addOrUpdate(Tanker(accountId.toInt, "", data.battles, data.wn8)).map(_ => data)
     }
-  }
-
-  private def cachedWn8InFile(userTag: String): Option[UserWn8WithBattles] = {
-    if (Files.exists(Paths.get(userFilePath(userTag)))) {
-      val wn8AndBattles = Source.fromFile(userFilePath(userTag)).mkString.split(";")
-      Some(UserWn8WithBattles(wn8AndBattles(0).toDouble, wn8AndBattles(1).toInt))
-    }
-    else None
+    Await.result(result, 1.minute)
   }
 
   private def calculateWn8(accountId: String): UserWn8WithBattles = {
 
     val tanks = accountTanks(accountId)
 
-    if(tanks == null) return UserWn8WithBattles(0, 0)
+    if (tanks == null) return UserWn8WithBattles(0, 0)
 
     var totalUserBattles: Int = 0
 
@@ -143,14 +137,13 @@ object UserWn8 {
       val currentTankId = currentTank("tank_id").toString.toInt
       val currentTankStatsMap = currentTank("all").asInstanceOf[Map[String, BigInt]]
       tanksExpectedValues.get(currentTankId) match {
-        case Some(_) => {
+        case Some(_) =>
           val damage: Double = currentTankStatsMap("damage_dealt").toDouble
           val spot: Double = currentTankStatsMap("spotted").toDouble
           val frags: Double = currentTankStatsMap("frags").toDouble
           val defence: Double = currentTankStatsMap("dropped_capture_points").toDouble
           val wins: Double = currentTankStatsMap("wins").toDouble
           Some(Vehicle(currentTankId, frags, damage, spot, defence, wins))
-        }
         case _ => None
       }
 
