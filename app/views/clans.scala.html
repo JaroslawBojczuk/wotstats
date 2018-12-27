@@ -18,11 +18,11 @@ $(function() {
     <tr class="hoverable">
         <td><img src="@clan.emblem"></td>
         <td class="clan_tag">
-            <a class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanWn8.getClanCachedWn8(clan.tag).getOrElse("0").toString)" href="@routes.ClanDetailsController.details(clan.clanId.toString)">@clan.tag</a>
+            <a class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanWn8.getClanCachedWn8(clan.clanId).toString)" href="@routes.ClanDetailsController.details(clan.clanId.toString)">@clan.tag</a>
         </td>
         <td>
-            <span class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanWn8.getClanCachedWn8(clan.tag).getOrElse("0").toString)">
-            @{"%.0f".format(ClanWn8.getClanCachedWn8(clan.tag).getOrElse(0d))}
+            <span class="@com.domain.presentation.model.ColorHelper.wn8Color(ClanWn8.getClanCachedWn8(clan.clanId).toString)">
+            @{"%.0f".format(ClanWn8.getClanCachedWn8(clan.clanId))}
             </span>
         </td>
         @if(clan.clanDelta.isDefined && clan.clanDelta.get.membersCount != 0) {

@@ -1,0 +1,55 @@
+package com.domain.db.schema
+
+import java.sql.Timestamp
+
+import slick.jdbc.JdbcProfile
+import slick.jdbc.MySQLProfile.api._
+import slick.lifted.Tag
+import slick.sql.SqlProfile.ColumnOption.SqlType
+
+import scala.concurrent.Future
+
+case class Clan(clanId: Int, name: String, wn8: Double, updated: Option[Timestamp] = None)
+
+class ClanTable(tag: Tag) extends Table[Clan](tag, Clans.tableName){
+
+  def clanId = column[Int]("clan_id", O.PrimaryKey)
+
+  def name = column[String]("name")
+
+  def wn8 = column[Double]("wn8")
+
+  def updated = column[Option[Timestamp]]("updated", SqlType("timestamp not null default NOW() on update NOW()"))
+
+  def * = (clanId, name, wn8, updated) <> (Clan.tupled, Clan.unapply)
+
+}
+
+object Clans {
+  val clans = TableQuery[ClanTable]
+
+  val tableName = "Clans"
+
+  trait ClansDao {
+    def add(clan: Clan): Future[Int]
+    def addOrUpdate(clan: Clan): Future[Int]
+    def findByClanId(clanId: Int): Future[Seq[Clan]]
+  }
+
+  class ClansDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends ClansDao {
+
+    override def findByClanId(clanId: Int): Future[Seq[Clan]] = {
+      db.run(clans.filter(_.clanId === clanId).result)
+    }
+
+    override def add(clan: Clan): Future[Int] = {
+      db.run(clans += clan)
+    }
+
+    override def addOrUpdate(clan: Clan): Future[Int] = {
+      db.run(clans.insertOrUpdate(clan))
+    }
+  }
+
+
+}
