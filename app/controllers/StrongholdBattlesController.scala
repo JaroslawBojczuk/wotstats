@@ -1,9 +1,8 @@
 package controllers
 
 import javax.inject._
-
 import com.domain.Constants
-import com.domain.clans.ClanUtils
+import com.domain.presentation.model.StrongholdBattle
 import play.api.mvc.{Action, _}
 import play.libs.Json
 
@@ -20,7 +19,7 @@ class StrongholdBattlesController @Inject() extends Controller {
     val clansJson = Json.parse(clansResponse)
     val clansIds = clansJson.findPath("data").findValues("clan_id").asScala
 
-    val battles = clansIds.flatMap(node => ClanUtils.getClanStrongholdPlannedBattles(node.asText())).toSeq.distinct.sortBy(_.date)
+    val battles = Seq.empty[StrongholdBattle]
 
     //val attackers = battles.groupBy(_.attackerClanTag).map(entry => (entry._1, entry._2.size)).toSeq.sortBy(-_._2)
     //val defenders = battles.groupBy(_.defenderClanTag).map(entry => (entry._1, entry._2.size)).toSeq.sortBy(-_._2)

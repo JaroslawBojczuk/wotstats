@@ -1,7 +1,7 @@
 package controllers
 
+import com.domain.clans.ClanWn8
 import javax.inject._
-import com.domain.wn8.ClanWn8
 import play.api.mvc._
 
 @Singleton

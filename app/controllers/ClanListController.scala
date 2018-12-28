@@ -3,7 +3,7 @@ package controllers
 import java.util.concurrent.Executors
 
 import com.domain.Constants._
-import com.domain.clans.ClanList
+import com.domain.clans.ClanSkirmishUtils
 import com.domain.presentation.model.{ClanDelta, ClanSummary}
 import javax.inject._
 import play.api.Logger
@@ -21,7 +21,7 @@ class ClanListController @Inject() extends Controller {
   Future {
     while (true) {
       Logger.debug("Refreshing clan skirmishes")
-      current = ClanList.clanSkirmishesStats
+      current = ClanSkirmishUtils.getCurrentClanSkirmishes
       refreshClanDelta()
       Logger.debug("Clan skirmishes refreshed")
       Thread.sleep(CLAN_SKIRMISH_PROBING_THRESHOLD)
@@ -31,7 +31,7 @@ class ClanListController @Inject() extends Controller {
   Future {
     while (true) {
       Logger.debug("Refreshing clan skirmishes from file")
-      previous = ClanList.previousStats
+      previous = ClanSkirmishUtils.previousStats
       Logger.debug("Clan skirmishes from file refreshed")
       Thread.sleep(CLAN_SKIRMISH_FILE_PROBING_THRESHOLD)
     }

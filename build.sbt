@@ -23,6 +23,8 @@ libraryDependencies += "com.typesafe.slick" %% "slick" % "3.2.3"
 libraryDependencies += "com.typesafe.slick" %% "slick-hikaricp" % "3.2.0"
 libraryDependencies += "org.mariadb.jdbc" % "mariadb-java-client" % "1.5.2"
 
+libraryDependencies += "joda-time" % "joda-time" % "2.10.1"
+
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.example.controllers._"
 

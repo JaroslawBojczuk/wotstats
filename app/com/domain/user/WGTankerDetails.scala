@@ -2,9 +2,11 @@ package com.domain.user
 
 import com.domain.Constants
 import com.domain.presentation.model.TankerDetails
-import com.domain.wn8.Wn8Veh
 import com.fasterxml.jackson.databind.JsonNode
 import play.libs.Json
+
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 object WGTankerDetails {
 
@@ -19,37 +21,33 @@ object WGTankerDetails {
     else None
   }
 
-  def getDetails(accountName: String) = {
-    findAccountId(accountName) match {
-      case Some(accountId) =>
-        val userResponse = scala.io.Source.fromURL(url(accountId)).mkString
-        val userJson = Json.parse(userResponse)
-        val data: JsonNode = userJson.findPath("data")
-        val name = data.findPath(accountId).findPath("nickname").asText()
-        val clanId = data.findPath(accountId).findPath("clan_id").asText()
+  def getDetails(accountId: Int): Some[TankerDetails] = {
+    val userResponse = scala.io.Source.fromURL(url(accountId.toString)).mkString
+    val userJson = Json.parse(userResponse)
+    val data: JsonNode = userJson.findPath("data")
+    val name = data.findPath(accountId.toString).findPath("nickname").asText()
+    val clanId = data.findPath(accountId.toString).findPath("clan_id").asText()
 
-        val statisticsAll: JsonNode = data.findPath("statistics").findPath("all")
-        val battles = statisticsAll.findPath("battles").asInt()
-        val wins = statisticsAll.findPath("wins").asInt()
-        val spotted = statisticsAll.findPath("spotted").asInt()
-        val frags = statisticsAll.findPath("frags").asInt()
+    val statisticsAll: JsonNode = data.findPath("statistics").findPath("all")
+    val battles = statisticsAll.findPath("battles").asInt()
+    val wins = statisticsAll.findPath("wins").asInt()
+    val spotted = statisticsAll.findPath("spotted").asInt()
+    val frags = statisticsAll.findPath("frags").asInt()
 
-        /*val statisticsSkirmish: JsonNode = data.findPath("statistics").findPath("stronghold_skirmish")
-        val battlesSkirmish = statisticsSkirmish.findPath("battles").asInt()*/
+    val tanks = Await.result(Wn8Veh.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
 
-        val tanks = Wn8Veh.calculate(accountId).sortBy(-_.wn8)
+    val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if(t.tier > 0) t.battles else 0).sum.toDouble
+    val avgSpot = spotted.toDouble / battles.toDouble
+    val avgFrags = frags.toDouble / battles.toDouble
 
-        val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if(t.tier > 0) t.battles else 0).sum.toDouble
-        val avgSpot = spotted.toDouble / battles.toDouble
-        val avgFrags = frags.toDouble / battles.toDouble
-
-        Some(TankerDetails(name, clanId, battles, wins, avgTier, avgSpot, avgFrags, com.domain.wn8.UserWn8.getAccountCachedWn8(accountId).wn8, tanks))
-      case _ => None
-    }
+    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, UserWn8.getAccountCachedWn8(accountId.toString).wn8, tanks))
   }
 
-  def main(args: Array[String]) {
-    println(getDetails("Vasth"))
+  def getDetails(accountName: String): Option[TankerDetails] = {
+    findAccountId(accountName) match {
+      case Some(accountId) => getDetails(accountId.toInt)
+      case _ => None
+    }
   }
 
 }

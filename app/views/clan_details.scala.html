@@ -15,13 +15,16 @@
     <tr>
         <td align="right" >Average WN8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(clan.averageWn8)">@clan.averageWn8</td>
     </tr>
+    <tr>
+        <td align="center" colspan="2"><a href="@routes.ClanDetailsController.refresh(clan.clanId.toString)">Refresh WN8</a></td>
+    </tr>
 </table>
 
 <div class="section">Members</div>
 <table class="members" cellpadding="0" cellspacing="0" align="center">
     <thead>
-        <th>Name</th>
-        <th>Role</th>
+        <th align="left">Name</th>
+        <th align="left">Role</th>
         <th>Battles</th>
         <th>Wn8</th>
     </thead>
@@ -30,7 +33,7 @@
         <td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td>
         <td>@member.role</td>
         <td align="right">@member.battles</td>
-        <td align="right" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)">@{"%.2f".format(member.wn8)}</td>
+        <td align="center" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)">@{"%.2f".format(member.wn8)}</td>
     </tr>
     }
 </table>

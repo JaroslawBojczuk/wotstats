@@ -7,9 +7,11 @@
 GET     /                           controllers.HomeController.index
 GET     /tanks/:accountId           controllers.HomeController.tanks(accountId)
 GET     /tanker/:accountName        controllers.TankerDetailsController.details(accountName)
+GET     /tanker/refresh/:accountId  controllers.TankerDetailsController.refresh(accountId)
 GET     /clans                      controllers.ClanListController.list
 GET     /stronghold_battles         controllers.StrongholdBattlesController.list
 GET     /clans/refresh              controllers.ClanUtilsController.refresh
+GET     /clans/refresh/:clanId      controllers.ClanDetailsController.refresh(clanId)
 GET     /clans/:clanId              controllers.ClanDetailsController.details(clanId)
 GET     /auth                       controllers.auth.AuthController.authorize(status: String ?= "", access_token: String ?= "", nickname: String ?= "", account_id: String ?= "", expires_at: String ?= "")
 

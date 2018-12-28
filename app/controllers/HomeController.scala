@@ -1,9 +1,8 @@
 package controllers
 
 import javax.inject._
-
 import com.domain.presentation.model.TankStats
-import com.domain.wn8.Wn8Veh
+import com.domain.user.Wn8Veh
 import play.api._
 import play.api.mvc._
 
@@ -27,7 +26,7 @@ class HomeController @Inject() extends Controller {
 
   def tanks(accountId: String) = Action { implicit request =>
 
-    val res = Wn8Veh.calculate(accountId)
+    val res = List.empty[TankStats]
 
     Ok(views.html.tanks(res))
   }
