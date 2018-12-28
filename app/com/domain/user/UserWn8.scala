@@ -1,42 +1,34 @@
 package com.domain.user
 
 import com.domain.Constants
+import com.domain.Tanks._
 import com.domain.db.DB
 import com.domain.db.DB.executionContext
-import com.domain.db.schema.Tanker
+import com.domain.db.schema.{Tanker, TankerHistory}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-import com.domain.Tanks._
+import scala.concurrent.Future
 
 object UserWn8 {
 
   case class UserWn8WithBattles(wn8: Double, battles: Int)
 
-  private def accountTanks(accountId: String): List[Map[String, Any]] = {
-    val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=tank_id%2Call").mkString
-    val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$accountId")
-    parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]
+  def refreshAccountCachedWn8(accountId: String): Future[UserWn8WithBattles] = {
+    val accountIdAsInt = accountId.toInt
+    val day = WGTankerDetails.getDayOfLastBattle(accountIdAsInt)
+    val data = calculateWn8(accountId)
+    for {
+      _ <- DB.TankersDao.addOrUpdate(Tanker(accountIdAsInt, data.battles, data.wn8))
+      res <- DB.TankerHistoryDao.addOrReplaceCurrentDay(accountIdAsInt, day, TankerHistory(accountIdAsInt, data.battles, data.wn8, day)).map(_ => data)
+    } yield res
   }
 
-  private def tankAvgValues(tankId: Int, values: Map[String, BigInt]): Option[Vehicle] = {
-    val damage: Double = values("damage_dealt").toDouble
-    val spot: Double = values("spotted").toDouble
-    val frags: Double = values("frags").toDouble
-    val defence: Double = values("dropped_capture_points").toDouble
-    val wins: Double = values("wins").toDouble
-    val battles: Double = values("battles").toDouble
-
-    if (battles > 0) {
-      val avg_damage: Double = damage / battles
-      val avg_spot: Double = spot / battles
-      val avg_frags: Double = frags / battles
-      val avg_defence: Double = defence / battles
-      val avg_wins: Double = BigDecimal((wins / battles) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
-      Some(Vehicle(tankId, avg_frags, avg_damage, avg_spot, avg_defence, avg_wins))
-    } else None
+  def getAccountCachedWn8(accountId: String): Future[UserWn8WithBattles] = {
+    DB.TankersDao.findByAccountId(accountId.toInt).map(_.headOption).flatMap {
+      case Some(tanker) => Future(UserWn8WithBattles(tanker.wn8, tanker.battles))
+      case None => refreshAccountCachedWn8(accountId)
+    }
   }
 
   private def calculateWn8ForTank(actualValues: Vehicle, expectedValues: Vehicle): Double = {
@@ -55,38 +47,6 @@ object UserWn8 {
     val WN8 = 980 * rDAMAGEc + 210 * rDAMAGEc * rFRAGc + 155 * rFRAGc * rSPOTc + 75 * rDEFc * rFRAGc + 145 * Math.min(1.8, rWINc)
 
     if (WN8 > 0) BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble else 0
-  }
-
-  def accountTanksWn8s(accountId: String): List[VehicleWn8] = {
-    val tanks = accountTanks(accountId)
-    val expectedValues = tanksExpectedValues
-
-    tanks.flatMap(currentTank => {
-      val currentTankId = currentTank("tank_id").toString.toInt
-      val currentTankStatsMap = currentTank("all").asInstanceOf[Map[String, BigInt]]
-      expectedValues.get(currentTankId) match {
-        case Some(vehicleExpectedValues) => {
-          tankAvgValues(currentTankId, currentTankStatsMap) match {
-            case Some(currentVeh) => Some(VehicleWn8(currentTankId, calculateWn8ForTank(currentVeh, vehicleExpectedValues)))
-            case _ => None
-          }
-        }
-        case _ => None
-      }
-    })
-  }
-
-  def refreshAccountCachedWn8(accountId: String): Future[UserWn8WithBattles] = {
-    val data = calculateWn8(accountId)
-    DB.TankersDao.addOrUpdate(Tanker(accountId.toInt, data.battles, data.wn8)).map(_ => data)
-  }
-
-  def getAccountCachedWn8(accountId: String): UserWn8WithBattles = {
-    val result = DB.TankersDao.findByAccountId(accountId.toInt).map(_.headOption).flatMap {
-      case Some(tanker) => Future(UserWn8WithBattles(tanker.wn8, tanker.battles))
-      case None => refreshAccountCachedWn8(accountId)
-    }
-    Await.result(result, 1.minute)
   }
 
   private def calculateWn8(accountId: String): UserWn8WithBattles = {
@@ -129,6 +89,12 @@ object UserWn8 {
 
     UserWn8WithBattles(calculateWn8ForTank(totalAccount, totalExpected), totalUserBattles)
 
+  }
+
+  private def accountTanks(accountId: String): List[Map[String, Any]] = {
+    val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=tank_id%2Call").mkString
+    val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$accountId")
+    parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]
   }
 
 }

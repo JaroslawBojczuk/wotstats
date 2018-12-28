@@ -56,7 +56,7 @@ object TankerTanks {
 
   trait TankerTanksDao {
     def add(tankerTanks: Seq[TankerTank]): Future[Option[Int]]
-    def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Unit]
+    def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]]
     def findByAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]]
   }
@@ -71,12 +71,12 @@ object TankerTanks {
       db.run(table.filter(_.accountId === accountId).result)
     }
 
-    override def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Unit] = {
+    override def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]] = {
       val q = (for {
         _ <- table.filter(tank => tank.accountId === accountId && tank.day === day).delete
         _ <- table ++= tankerTanks
       } yield()).transactionally
-      db.run(q)
+      db.run(q).map(_ => tankerTanks)
     }
 
     override def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]] = {

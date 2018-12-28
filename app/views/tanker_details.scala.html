@@ -28,12 +28,12 @@ $(function() {
         <th></th>
         <th align="left">Tank&nbsp;</th>
         <th>Tier</th>
-        <th>Battles</th>
         <th>Ø Frags</th>
         <th>Ø Spot</th>
-        <th>% Wins</th>
         <th>Ø Dmg</th>
         <th>Ø Exp</th>
+        <th>% Wins</th>
+        <th>Battles</th>
         <th>Wn8</th>
     </thead>
     @for(tank <- tanker.get.tanks) {
@@ -41,12 +41,12 @@ $(function() {
         <td align="center"><img src="@tank.imgPath"/></td>
         <td align="left">@tank.name&nbsp;</td>
         <td align="center">@tank.tier</td>
-        <td align="center">@tank.battles</td>
         <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
         <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
-        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
         <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
         <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+        <td align="center">@tank.battles</td>
         <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
     </tr>
     }

@@ -2,7 +2,7 @@ package controllers
 
 import javax.inject._
 import com.domain.presentation.model.TankStats
-import com.domain.user.Wn8Veh
+import com.domain.user.UserTanksWn8
 import play.api._
 import play.api.mvc._
 

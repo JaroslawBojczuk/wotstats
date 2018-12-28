@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject._
-import com.domain.user.{UserWn8, WGTankerDetails, Wn8Veh}
+import com.domain.user.{UserWn8, WGTankerDetails, UserTanksWn8}
 import play.api.mvc._
 
 import scala.concurrent.Await
@@ -11,8 +11,8 @@ import scala.concurrent.duration._
 class TankerDetailsController @Inject() extends Controller {
 
   def refresh(accountId: String): Action[AnyContent] = Action { implicit request =>
-    Await.result(Wn8Veh.refreshTankerTanksForCurrentDay(accountId.toInt), 1.minute)
     Await.result(UserWn8.refreshAccountCachedWn8(accountId), 1.minute)
+    Await.result(UserTanksWn8.refreshTankerTanks(accountId.toInt), 1.minute)
     Ok(views.html.success())
   }
 

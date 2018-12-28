@@ -1,7 +1,10 @@
 package com.domain.user
 
+import java.util.concurrent.TimeUnit
+
 import com.domain.Constants
 import com.domain.presentation.model.TankerDetails
+import com.domain.user.UserTanksWn8.tankDetailsUrl
 import com.fasterxml.jackson.databind.JsonNode
 import play.libs.Json
 
@@ -21,6 +24,16 @@ object WGTankerDetails {
     else None
   }
 
+  def getDayOfLastBattle(accountId: Int): Long = {
+    val url = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=last_battle_time"
+    val lastBattleSecondsSince1970 = ujson.read(requests.get(url).text).obj("data")(accountId.toString)("last_battle_time").num.toLong
+    TimeUnit.SECONDS.toDays(lastBattleSecondsSince1970)
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(getDayOfLastBattle(500557563))
+  }
+
   def getDetails(accountId: Int): Some[TankerDetails] = {
     val userResponse = scala.io.Source.fromURL(url(accountId.toString)).mkString
     val userJson = Json.parse(userResponse)
@@ -34,13 +47,14 @@ object WGTankerDetails {
     val spotted = statisticsAll.findPath("spotted").asInt()
     val frags = statisticsAll.findPath("frags").asInt()
 
-    val tanks = Await.result(Wn8Veh.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
+    val accountWn8 = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute).wn8
+    val tanks = Await.result(UserTanksWn8.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
 
     val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if(t.tier > 0) t.battles else 0).sum.toDouble
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
 
-    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, UserWn8.getAccountCachedWn8(accountId.toString).wn8, tanks))
+    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, tanks))
   }
 
   def getDetails(accountName: String): Option[TankerDetails] = {

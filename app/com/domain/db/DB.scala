@@ -7,6 +7,7 @@ import com.domain.db.schema.Clans.ClansDaoImpl
 import com.domain.db.schema.TankerTanks.TankerTanksDaoImpl
 import com.domain.db.schema._
 import com.domain.db.schema.Tankers.TankersDaoImpl
+import com.domain.db.schema.TankersHistory.TankerHistoryDaoImpl
 import slick.jdbc.MySQLProfile
 import slick.jdbc.MySQLProfile.api._
 
@@ -18,6 +19,8 @@ object DB {
   implicit val db: MySQLProfile.backend.Database = Database.forConfig("db")
 
   implicit val executionContext: ExecutionContextExecutor = ExecutionContext.fromExecutor(Executors.newFixedThreadPool(10))
+
+  val TankerHistoryDao = new TankerHistoryDaoImpl
 
   val TankerTanksDao = new TankerTanksDaoImpl
 
@@ -33,6 +36,9 @@ object DB {
 //
     //Await.result(db.run(Tankers.table.schema.create), 10.seconds)
     //Await.result(db.run(Clans.table.schema.create), 10.seconds)
+
+    //Await.result(db.run(TankersHistory.table.schema.drop), 10.seconds)
+    Await.result(db.run(TankersHistory.table.schema.create), 10.seconds)
 
     Await.result(db.run(TankerTanks.table.schema.drop), 10.seconds)
     Await.result(db.run(TankerTanks.table.schema.create), 10.seconds)

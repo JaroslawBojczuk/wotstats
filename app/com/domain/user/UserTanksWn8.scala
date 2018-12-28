@@ -1,9 +1,9 @@
 package com.domain.user
 
-import java.util.concurrent.TimeUnit
-
 import com.domain.Constants
+import com.domain.Tanks._
 import com.domain.db.DB
+import com.domain.db.DB.executionContext
 import com.domain.db.schema.TankerTank
 import com.domain.presentation.model.TankStats
 import org.json4s.JValue
@@ -11,30 +11,21 @@ import org.json4s.jackson.JsonMethods.{parse, render}
 
 import scala.concurrent.Future
 import scala.util.Try
-import com.domain.db.DB.executionContext
-import com.domain.Tanks._
 
-object Wn8Veh {
+object UserTanksWn8 {
 
   private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier,images.contour_icon"
   private val tankDetails = ujson.read(requests.get(tankDetailsUrl).text).obj.get("data")
 
-  def refreshTankerTanksForCurrentDay(accountId: Int): Future[Unit] = {
-    val day = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
+  def refreshTankerTanks(accountId: Int): Future[Seq[TankerTank]] = {
+    val day = WGTankerDetails.getDayOfLastBattle(accountId)
     DB.TankerTanksDao.addOrReplaceCurrentDay(accountId, day, calculate(accountId, day))
   }
 
-  def getTankerLatestTanks(accountId: Int): Future[Seq[TankStats]] = {
-    val day = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
-    for {
-      tanksFromDb: Seq[TankerTank] <- DB.TankerTanksDao.findLatestForAccountId(accountId)
-      tanks: Seq[TankerTank] = if (tanksFromDb.nonEmpty) tanksFromDb else {
-        val calc = calculate(accountId, day)
-        DB.TankerTanksDao.addOrReplaceCurrentDay(accountId, day, calc)
-        calc
-      }
-    } yield tanks.map(convertTanksToUi)
-  }
+  def getTankerLatestTanks(accountId: Int): Future[Seq[TankStats]] = for {
+    tanksFromDb: Seq[TankerTank] <- DB.TankerTanksDao.findLatestForAccountId(accountId)
+    tanks <- if (tanksFromDb.nonEmpty) Future(tanksFromDb) else refreshTankerTanks(accountId)
+  } yield tanks.map(convertTanksToUi)
 
   private def calculate(accountId: Int, day: Long): List[TankerTank] = {
 

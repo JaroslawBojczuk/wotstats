@@ -45,7 +45,7 @@ object ClanWn8 {
     while (members.hasNext) {
       val member: JsonNode = members.next()
       val accountId = member.findPath("account_id").asInt
-      val wn8AndBattles: UserWn8WithBattles = UserWn8.getAccountCachedWn8(accountId.toString)
+      val wn8AndBattles: UserWn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute)
       membersList += ClanMemberDetails(
         member.findPath("account_name").asText(),
         accountId,
