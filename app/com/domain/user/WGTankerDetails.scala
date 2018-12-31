@@ -4,12 +4,12 @@ import java.util.concurrent.TimeUnit
 
 import com.domain.Constants
 import com.domain.presentation.model.TankerDetails
-import com.domain.user.UserTanksWn8.tankDetailsUrl
 import com.fasterxml.jackson.databind.JsonNode
 import play.libs.Json
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.util.Try
 
 object WGTankerDetails {
 
@@ -26,7 +26,7 @@ object WGTankerDetails {
 
   def getDayOfLastBattle(accountId: Int): Long = {
     val url = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=last_battle_time"
-    val lastBattleSecondsSince1970 = ujson.read(requests.get(url).text).obj("data")(accountId.toString)("last_battle_time").num.toLong
+    val lastBattleSecondsSince1970 = Try(ujson.read(requests.get(url).text).obj("data")(accountId.toString)("last_battle_time").num.toLong).recover { case _ => 0L }.get
     TimeUnit.SECONDS.toDays(lastBattleSecondsSince1970)
   }
 
@@ -50,7 +50,7 @@ object WGTankerDetails {
     val accountWn8 = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute).wn8
     val tanks = Await.result(UserTanksWn8.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
 
-    val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if(t.tier > 0) t.battles else 0).sum.toDouble
+    val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if (t.tier > 0) t.battles else 0).sum.toDouble
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
 

@@ -17,8 +17,9 @@
             <ul id="topnav" class="topnav">
                 <li><a href="/">Home page</a></li>
                 <li><a href="/clans">Clan skirmishes</a></li>
-                <li><a href="/stronghold_battles">Stronghold battles</a></li>
-                <li><a href="@routes.ClanUtilsController.refresh">Refresh clans</a></li>
+                <li><a href="@routes.HomeController.refreshUsers">Refresh users WN8</a></li>
+                <li><a href="@routes.HomeController.refreshClansWn8">Refresh clans WN8</a></li>
+                <li><a href="@routes.ClanUtilsController.refresh">Refresh clans skirmishes</a></li>
                 @if(loggedUser.isDefined && storage.UserTokens(loggedUser.get).isDefined) {
                     <li><a href="@routes.TankerDetailsController.details(storage.UserTokens(loggedUser.get).get.nickname)">@storage.UserTokens(loggedUser.get).get.nickname</a></li>
                 } else {

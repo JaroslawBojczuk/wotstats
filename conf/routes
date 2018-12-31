@@ -8,6 +8,8 @@ GET     /                           controllers.HomeController.index
 GET     /tanks/:accountId           controllers.HomeController.tanks(accountId)
 GET     /tanker/:accountName        controllers.TankerDetailsController.details(accountName)
 GET     /tanker/refresh/:accountId  controllers.TankerDetailsController.refresh(accountId)
+GET     /tankers/refresh            controllers.HomeController.refreshUsers
+GET     /clans/refreshWn8           controllers.HomeController.refreshClansWn8
 GET     /clans                      controllers.ClanListController.list
 GET     /stronghold_battles         controllers.StrongholdBattlesController.list
 GET     /clans/refresh              controllers.ClanUtilsController.refresh

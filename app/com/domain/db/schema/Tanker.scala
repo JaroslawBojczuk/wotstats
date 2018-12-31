@@ -35,6 +35,7 @@ object Tankers {
     def add(tanker: Tanker): Future[Int]
     def addOrUpdate(tanker: Tanker): Future[Int]
     def findByAccountId(accountId: Int): Future[Seq[Tanker]]
+    def getAll: Future[Seq[Int]]
   }
 
   class TankersDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankersDao {
@@ -49,6 +50,10 @@ object Tankers {
 
     override def addOrUpdate(tanker: Tanker): Future[Int] = {
       db.run(table.insertOrUpdate(tanker))
+    }
+
+    override def getAll: Future[Seq[Int]] = {
+      db.run(table.map(_.accountId).result)
     }
   }
 

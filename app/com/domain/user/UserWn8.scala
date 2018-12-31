@@ -7,8 +7,10 @@ import com.domain.db.DB.executionContext
 import com.domain.db.schema.{Tanker, TankerHistory}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import play.api.Logger
 
 import scala.concurrent.Future
+import scala.util.Try
 
 object UserWn8 {
 
@@ -49,11 +51,11 @@ object UserWn8 {
     if (WN8 > 0) BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble else 0
   }
 
-  private def calculateWn8(accountId: String): UserWn8WithBattles = {
-
+  def calculateWn8(accountId: String): UserWn8WithBattles = {
+    Logger.debug(s"Calculating account wn8 for user: $accountId")
     val tanks = accountTanks(accountId)
 
-    if (tanks == null) return UserWn8WithBattles(0, 0)
+    if (tanks == null || tanks.isEmpty) return UserWn8WithBattles(0, 0)
 
     var totalUserBattles: Int = 0
 
@@ -87,6 +89,8 @@ object UserWn8 {
       Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
     })
 
+    Logger.debug(s"Calculated wn8 for user: $accountId")
+
     UserWn8WithBattles(calculateWn8ForTank(totalAccount, totalExpected), totalUserBattles)
 
   }
@@ -94,7 +98,7 @@ object UserWn8 {
   private def accountTanks(accountId: String): List[Map[String, Any]] = {
     val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=tank_id%2Call").mkString
     val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$accountId")
-    parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]
+    Try(parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]).recover { case _ => List.empty}.get
   }
 
 }

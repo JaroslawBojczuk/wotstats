@@ -2,6 +2,7 @@ package com.domain.db.schema
 
 import java.sql.Timestamp
 
+import com.domain.db.schema.Tankers.table
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.Tag
@@ -32,6 +33,7 @@ object Clans {
     def add(clan: Clan): Future[Int]
     def addOrUpdate(clan: Clan): Future[Int]
     def findByClanId(clanId: Int): Future[Seq[Clan]]
+    def getAll: Future[Seq[Int]]
   }
 
   class ClansDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends ClansDao {
@@ -46,6 +48,10 @@ object Clans {
 
     override def addOrUpdate(clan: Clan): Future[Int] = {
       db.run(table.insertOrUpdate(clan))
+    }
+
+    override def getAll: Future[Seq[Int]] = {
+      db.run(table.map(_.clanId).result)
     }
   }
 

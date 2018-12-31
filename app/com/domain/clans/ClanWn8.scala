@@ -45,22 +45,21 @@ object ClanWn8 {
     while (members.hasNext) {
       val member: JsonNode = members.next()
       val accountId = member.findPath("account_id").asInt
-      val wn8AndBattles: UserWn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute)
       membersList += ClanMemberDetails(
         member.findPath("account_name").asText(),
         accountId,
-        member.findPath("role_i18n").asText(),
-        wn8AndBattles.wn8,
-        wn8AndBattles.battles)
+        member.findPath("role_i18n").asText(), 0, 0)
     }
-    membersList
+    membersList.par.map(member => {
+      val wn8AndBattles: UserWn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(member.accountId.toString), 1.minute)
+      member.copy(wn8 = wn8AndBattles.wn8, battles = wn8AndBattles.battles)
+    }).seq
   }
 
   private def calculateAverageWn8(membersList: Seq[ClanMemberDetails]): Double = {
     val totalBattles = membersList.map(_.battles).sum
     val weightedWn8s = membersList.map(v => (v.wn8 * v.battles) / totalBattles)
-    val avg = BigDecimal(weightedWn8s.sum).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-    avg
+    BigDecimal(weightedWn8s.sum).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
 
   def saveCurrentClansInFile() = Future {

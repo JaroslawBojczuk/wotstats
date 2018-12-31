@@ -14,8 +14,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class ClanListController @Inject() extends Controller {
 
-  def list: Action[AnyContent] = Action.async { implicit request =>
-    Future(Ok(views.html.clans(clanDeltaCached)))(play.api.libs.concurrent.Execution.Implicits.defaultContext)
+  def list: Action[AnyContent] = Action { implicit request =>
+    Ok(views.html.clans(clanDeltaCached))
   }
 
   Future {
