@@ -7,6 +7,7 @@ import slick.jdbc.JdbcProfile
 import slick.lifted.Tag
 import slick.jdbc.MySQLProfile.api._
 import slick.sql.SqlProfile.ColumnOption.SqlType
+import com.domain.db.DB.executionContext
 
 import scala.concurrent.Future
 
@@ -36,6 +37,7 @@ object Tankers {
     def addOrUpdate(tanker: Tanker): Future[Int]
     def findByAccountId(accountId: Int): Future[Seq[Tanker]]
     def getAll: Future[Seq[Int]]
+    def addOrUpdate(tankers: Seq[Tanker]): Future[Seq[Int]]
   }
 
   class TankersDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankersDao {
@@ -52,9 +54,17 @@ object Tankers {
       db.run(table.insertOrUpdate(tanker))
     }
 
+    override def addOrUpdate(tankers: Seq[Tanker]): Future[Seq[Int]] = {
+      val query = (for {
+        res <- DBIO.sequence(tankers.map(tanker => table.filter(_.accountId === tanker.accountId).update(tanker)))
+      } yield res).transactionally
+      db.run(query)
+    }
+
     override def getAll: Future[Seq[Int]] = {
       db.run(table.map(_.accountId).result)
     }
+
   }
 
 

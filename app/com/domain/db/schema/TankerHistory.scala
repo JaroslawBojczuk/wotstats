@@ -35,9 +35,9 @@ object TankersHistory {
 
     def findByAccountId(accountId: Int): Future[Seq[TankerHistory]]
 
-    def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerHistory: TankerHistory): Future[TankerHistory]
+    def addOrReplaceCurrentDay(accountId: Int, tankerHistory: TankerHistory): Future[TankerHistory]
 
-    def addOrReplaceCurrentDayBatch(day: Long, tankerHistory: Seq[TankerHistory]): Future[Seq[TankerHistory]]
+    def addOrReplaceCurrentDayBatch(tankerHistory: Seq[TankerHistory]): Future[Seq[TankerHistory]]
   }
 
   class TankerHistoryDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankerHistoryDao {
@@ -50,17 +50,17 @@ object TankersHistory {
       db.run(table += tankerHistory)
     }
 
-    override def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerHistory: TankerHistory): Future[TankerHistory] = {
+    override def addOrReplaceCurrentDay(accountId: Int, tankerHistory: TankerHistory): Future[TankerHistory] = {
       val q = (for {
-        _ <- table.filter(tanker => tanker.accountId === accountId && tanker.day === day).delete
+        _ <- table.filter(tanker => tanker.accountId === accountId && tanker.day === tankerHistory.day).delete
         _ <- table += tankerHistory
       } yield()).transactionally
       db.run(q).map(_ => tankerHistory)
     }
 
-    override def addOrReplaceCurrentDayBatch(day: Long, tankerHistory: Seq[TankerHistory]): Future[Seq[TankerHistory]] = {
+    override def addOrReplaceCurrentDayBatch(tankerHistory: Seq[TankerHistory]): Future[Seq[TankerHistory]] = {
       val q = (for {
-        _ <- table.filter(tanker => tanker.accountId.inSet(tankerHistory.map(_.accountId)) && tanker.day === day).delete
+        _ <- table.filter(tanker => tanker.accountId.inSet(tankerHistory.map(_.accountId)) && tanker.day === tankerHistory.head.day).delete
         _ <- table ++= tankerHistory
       } yield()).transactionally
       db.run(q).map(_ => tankerHistory)

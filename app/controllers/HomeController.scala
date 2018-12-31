@@ -2,13 +2,12 @@ package controllers
 
 import com.domain.clans.ClanWn8
 import com.domain.db.DB
-import com.domain.presentation.model.TankStats
-import com.domain.user.UserWn8
-import javax.inject._
 import com.domain.db.DB.executionContext
+import com.domain.db.schema.{Tanker, TankerHistory}
+import com.domain.presentation.model.TankStats
+import com.domain.user.{UserWn8, WGTankerDetails}
+import javax.inject._
 import play.api.mvc._
-
-import scala.concurrent.Await
 
 
 /**
@@ -37,7 +36,13 @@ class HomeController @Inject() extends Controller {
 
   def refreshUsers: Action[AnyContent] = Action.async { implicit request =>
     DB.TankersDao.getAll.map(users => {
-      users.par.foreach(user => UserWn8.refreshAccountCachedWn8(user.toString))
+      val tankersHistory = users.par.map(accountId => {
+        val day = WGTankerDetails.getDayOfLastBattle(accountId)
+        val userWn8 = UserWn8.calculateWn8(accountId)
+        TankerHistory(userWn8.accountId, userWn8.battles, userWn8.wn8, day)
+      }).seq
+      DB.TankerHistoryDao.addOrReplaceCurrentDayBatch(tankersHistory)
+      DB.TankersDao.addOrUpdate(tankersHistory.map(tanker => Tanker(tanker.accountId, tanker.battles, tanker.wn8)))
     }).map(_ => {
       Ok(views.html.success())
     })

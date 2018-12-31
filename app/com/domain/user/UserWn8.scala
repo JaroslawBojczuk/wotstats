@@ -14,26 +14,26 @@ import scala.util.Try
 
 object UserWn8 {
 
-  case class UserWn8WithBattles(wn8: Double, battles: Int)
+  case class UserWn8WithBattles(accountId: Int, wn8: Double, battles: Int)
 
   def refreshAccountCachedWn8(accountId: String): Future[UserWn8WithBattles] = {
     val accountIdAsInt = accountId.toInt
     val day = WGTankerDetails.getDayOfLastBattle(accountIdAsInt)
-    val data = calculateWn8(accountId)
+    val data = calculateWn8(accountIdAsInt)
     for {
       _ <- DB.TankersDao.addOrUpdate(Tanker(accountIdAsInt, data.battles, data.wn8))
-      res <- DB.TankerHistoryDao.addOrReplaceCurrentDay(accountIdAsInt, day, TankerHistory(accountIdAsInt, data.battles, data.wn8, day)).map(_ => data)
+      res <- DB.TankerHistoryDao.addOrReplaceCurrentDay(accountIdAsInt, TankerHistory(accountIdAsInt, data.battles, data.wn8, day)).map(_ => data)
     } yield res
   }
 
   def getAccountCachedWn8(accountId: String): Future[UserWn8WithBattles] = {
     DB.TankersDao.findByAccountId(accountId.toInt).map(_.headOption).flatMap {
-      case Some(tanker) => Future(UserWn8WithBattles(tanker.wn8, tanker.battles))
+      case Some(tanker) => Future(UserWn8WithBattles(accountId.toInt, tanker.wn8, tanker.battles))
       case None => refreshAccountCachedWn8(accountId)
     }
   }
 
-  private def calculateWn8ForTank(actualValues: Vehicle, expectedValues: Vehicle): Double = {
+  private def calculateWn8Value(actualValues: Vehicle, expectedValues: Vehicle): Double = {
     val rDAMAGE: Double = actualValues.dmg / expectedValues.dmg
     val rSPOT: Double = actualValues.spot / expectedValues.spot
     val rFRAG: Double = actualValues.frag / expectedValues.frag
@@ -51,11 +51,11 @@ object UserWn8 {
     if (WN8 > 0) BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble else 0
   }
 
-  def calculateWn8(accountId: String): UserWn8WithBattles = {
+  def calculateWn8(accountId: Int): UserWn8WithBattles = {
     Logger.debug(s"Calculating account wn8 for user: $accountId")
     val tanks = accountTanks(accountId)
 
-    if (tanks == null || tanks.isEmpty) return UserWn8WithBattles(0, 0)
+    if (tanks == null || tanks.isEmpty) return UserWn8WithBattles(0, 0, 0)
 
     var totalUserBattles: Int = 0
 
@@ -91,11 +91,11 @@ object UserWn8 {
 
     Logger.debug(s"Calculated wn8 for user: $accountId")
 
-    UserWn8WithBattles(calculateWn8ForTank(totalAccount, totalExpected), totalUserBattles)
+    UserWn8WithBattles(accountId.toInt, calculateWn8Value(totalAccount, totalExpected), totalUserBattles)
 
   }
 
-  private def accountTanks(accountId: String): List[Map[String, Any]] = {
+  private def accountTanks(accountId: Int): List[Map[String, Any]] = {
     val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=tank_id%2Call").mkString
     val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$accountId")
     Try(parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]).recover { case _ => List.empty}.get
