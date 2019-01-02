@@ -3,7 +3,8 @@ package com.domain.user
 import java.util.concurrent.TimeUnit
 
 import com.domain.Constants
-import com.domain.presentation.model.TankerDetails
+import com.domain.db.schema.TankerTank
+import com.domain.presentation.model.{TankStats, TankerDetails}
 import com.fasterxml.jackson.databind.JsonNode
 import play.libs.Json
 
@@ -14,6 +15,9 @@ import scala.util.Try
 object WGTankerDetails {
 
   private def url(accountId: String) = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId"
+
+  private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier,images.contour_icon"
+  private val tankDetails = ujson.read(requests.get(tankDetailsUrl).text).obj.get("data")
 
   private def findAccountId(name: String) = {
     val userResponse = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/account/list/?application_id=${Constants.APPLICATION_ID}&search=$name&type=exact&fields=account_id").mkString
@@ -30,8 +34,23 @@ object WGTankerDetails {
     TimeUnit.SECONDS.toDays(lastBattleSecondsSince1970)
   }
 
-  def main(args: Array[String]): Unit = {
-    println(getDayOfLastBattle(500557563))
+  private def convertTanksToUi: TankerTank => TankStats = {
+    tank => {
+      val tankResponse = tankDetails.get(tank.tankId.toString)
+      val tankName = tankResponse("name").str
+      val tankLevel = tankResponse("tier").num
+      val imgPath = tankResponse("images")("contour_icon").str
+      val avg_damage: Double = tank.damageDealt / tank.battles.toDouble
+      val avg_spot: Double = tank.spotted / tank.battles.toDouble
+      val avg_frags: Double = tank.frags / tank.battles.toDouble
+      val avg_wins: Double = BigDecimal((tank.wins.toDouble / tank.battles.toDouble) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
+      TankStats(tankName, imgPath, tank.battles, Try(tankLevel.toInt).getOrElse(0), tank.wn8,
+        BigDecimal(avg_damage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+        BigDecimal(0).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+        BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+        BigDecimal(avg_spot).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+        avg_wins, tank.battleAvgXp)
+    }
   }
 
   def getDetails(accountId: Int): Some[TankerDetails] = {
@@ -41,20 +60,21 @@ object WGTankerDetails {
     val name = data.findPath(accountId.toString).findPath("nickname").asText()
     val clanId = data.findPath(accountId.toString).findPath("clan_id").asText()
 
-    val statisticsAll: JsonNode = data.findPath("statistics").findPath("all")
-    val battles = statisticsAll.findPath("battles").asInt()
-    val wins = statisticsAll.findPath("wins").asInt()
-    val spotted = statisticsAll.findPath("spotted").asInt()
-    val frags = statisticsAll.findPath("frags").asInt()
-
     val accountWn8 = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute).wn8
     val tanks = Await.result(UserTanksWn8.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
 
-    val avgTier = tanks.map(t => t.tier * t.battles).sum.toDouble / tanks.map(t => if (t.tier > 0) t.battles else 0).sum.toDouble
+    val battles = tanks.map(_.battles).sum
+    val wins = tanks.map(_.wins).sum
+    val spotted = tanks.map(_.spotted).sum
+    val frags = tanks.map(_.frags).sum
+
+    val tanksUi = tanks.map(convertTanksToUi)
+    val avgTier = tanksUi.map(t => t.tier * t.battles).sum.toDouble / tanksUi.map(t => if (t.tier > 0) t.battles else 0).sum.toDouble
+
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
 
-    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, tanks))
+    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, tanksUi))
   }
 
   def getDetails(accountName: String): Option[TankerDetails] = {

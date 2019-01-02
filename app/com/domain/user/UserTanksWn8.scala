@@ -5,27 +5,22 @@ import com.domain.Tanks._
 import com.domain.db.DB
 import com.domain.db.DB.executionContext
 import com.domain.db.schema.TankerTank
-import com.domain.presentation.model.TankStats
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods.{parse, render}
 
 import scala.concurrent.Future
-import scala.util.Try
 
 object UserTanksWn8 {
-
-  private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier,images.contour_icon"
-  private val tankDetails = ujson.read(requests.get(tankDetailsUrl).text).obj.get("data")
 
   def refreshTankerTanks(accountId: Int): Future[Seq[TankerTank]] = {
     val day = WGTankerDetails.getDayOfLastBattle(accountId)
     DB.TankerTanksDao.addOrReplaceCurrentDay(accountId, day, calculate(accountId, day))
   }
 
-  def getTankerLatestTanks(accountId: Int): Future[Seq[TankStats]] = for {
+  def getTankerLatestTanks(accountId: Int): Future[Seq[TankerTank]] = for {
     tanksFromDb: Seq[TankerTank] <- DB.TankerTanksDao.findLatestForAccountId(accountId)
     tanks <- if (tanksFromDb.nonEmpty) Future(tanksFromDb) else refreshTankerTanks(accountId)
-  } yield tanks.map(convertTanksToUi)
+  } yield tanks
 
   private def calculate(accountId: Int, day: Long): List[TankerTank] = {
 
@@ -85,23 +80,5 @@ object UserTanksWn8 {
         None
       }
     })
-  }
-
-  private def convertTanksToUi: TankerTank => TankStats = {
-    tank => {
-      val tankName = tankDetails.get(tank.tankId.toString)("name").str
-      val tankLevel = tankDetails.get(tank.tankId.toString)("tier").num
-      val imgPath = tankDetails.get(tank.tankId.toString)("images")("contour_icon").str
-      val avg_damage: Double = tank.damageDealt / tank.battles.toDouble
-      val avg_spot: Double = tank.spotted / tank.battles.toDouble
-      val avg_frags: Double = tank.frags / tank.battles.toDouble
-      val avg_wins: Double = BigDecimal((tank.wins.toDouble / tank.battles.toDouble) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
-      TankStats(tankName, imgPath, tank.battles, Try(tankLevel.toInt).getOrElse(0), tank.wn8,
-        BigDecimal(avg_damage).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
-        BigDecimal(0).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
-        BigDecimal(avg_frags).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
-        BigDecimal(avg_spot).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
-        avg_wins, tank.battleAvgXp)
-    }
   }
 }
