@@ -105,6 +105,10 @@ ul.topnav li a {
 ul.topnav li a:hover {background-color: #555;}
 ul.topnav li.icon {display: none;}
 
+table.user_tanks {
+    min-width: 900px;
+}
+
 table.user_tanks th {
     padding: 10px;
 }

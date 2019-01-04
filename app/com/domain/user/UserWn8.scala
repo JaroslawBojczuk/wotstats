@@ -1,6 +1,6 @@
 package com.domain.user
 
-import com.domain.Constants
+import com.domain.{Constants, WN8}
 import com.domain.Tanks._
 import com.domain.db.DB
 import com.domain.db.DB.executionContext
@@ -33,27 +33,9 @@ object UserWn8 {
     }
   }
 
-  private def calculateWn8Value(actualValues: Vehicle, expectedValues: Vehicle): Double = {
-    val rDAMAGE: Double = actualValues.dmg / expectedValues.dmg
-    val rSPOT: Double = actualValues.spot / expectedValues.spot
-    val rFRAG: Double = actualValues.frag / expectedValues.frag
-    val rDEF: Double = actualValues.defence / expectedValues.defence
-    val rWin: Double = actualValues.win / expectedValues.win
-
-    val rWINc = Math.max(0, (rWin - 0.71) / (1 - 0.71))
-    val rDAMAGEc = Math.max(0, (rDAMAGE - 0.22) / (1 - 0.22))
-    val rFRAGc = Math.max(0, Math.min(rDAMAGEc + 0.2, (rFRAG - 0.12) / (1 - 0.12)))
-    val rSPOTc = Math.max(0, Math.min(rDAMAGEc + 0.1, (rSPOT - 0.38) / (1 - 0.38)))
-    val rDEFc = Math.max(0, Math.min(rDAMAGEc + 0.1, (rDEF - 0.10) / (1 - 0.10)))
-
-    val WN8 = 980 * rDAMAGEc + 210 * rDAMAGEc * rFRAGc + 155 * rFRAGc * rSPOTc + 75 * rDEFc * rFRAGc + 145 * Math.min(1.8, rWINc)
-
-    if (WN8 > 0) BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble else 0
-  }
-
   def calculateWn8(accountId: Int): UserWn8WithBattles = {
     Logger.debug(s"Calculating account wn8 for user: $accountId")
-    val tanks = accountTanks(accountId)
+    val tanks: Seq[Map[String, Any]] = accountTanks(accountId)
 
     if (tanks == null || tanks.isEmpty) return UserWn8WithBattles(0, 0, 0)
 
@@ -64,14 +46,14 @@ object UserWn8 {
       val tankBattles = currentTank("all").asInstanceOf[Map[String, BigInt]]("battles").toDouble
       totalUserBattles += tankBattles.toInt
       tanksExpectedValues.get(currentTankId) match {
-        case Some(expVal) => Some(Vehicle(expVal.IDNum, expVal.frag * tankBattles, expVal.dmg * tankBattles, expVal.spot * tankBattles, expVal.defence * tankBattles, 0.01 * expVal.win * tankBattles))
+        case Some(expVal) => Some(VehicleAverages(expVal.IDNum, expVal.frag * tankBattles, expVal.dmg * tankBattles, expVal.spot * tankBattles, expVal.defence * tankBattles, 0.01 * expVal.win * tankBattles))
         case _ => None
       }
     }).reduce((a, b) => {
-      Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
+      VehicleAverages(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
     })
 
-    val totalAccount = tanks.par.flatMap(currentTank => {
+    val totalAccount = tanks.par.flatMap((currentTank: Map[String, Any]) => {
       val currentTankId = currentTank("tank_id").toString.toInt
       val currentTankStatsMap = currentTank("all").asInstanceOf[Map[String, BigInt]]
       tanksExpectedValues.get(currentTankId) match {
@@ -81,17 +63,18 @@ object UserWn8 {
           val frags: Double = currentTankStatsMap("frags").toDouble
           val defence: Double = currentTankStatsMap("dropped_capture_points").toDouble
           val wins: Double = currentTankStatsMap("wins").toDouble
-          Some(Vehicle(currentTankId, frags, damage, spot, defence, wins))
+          Some(VehicleAverages(currentTankId, frags, damage, spot, defence, wins))
         case _ => None
       }
 
     }).reduce((a, b) => {
-      Vehicle(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
+      VehicleAverages(0, a.frag + b.frag, a.dmg + b.dmg, a.spot + b.spot, a.defence + b.defence, a.win + b.win)
     })
 
+    val wn8 = WN8.calculateWn8Value(totalAccount, totalExpected)
     Logger.debug(s"Calculated wn8 for user: $accountId")
 
-    UserWn8WithBattles(accountId.toInt, calculateWn8Value(totalAccount, totalExpected), totalUserBattles)
+    UserWn8WithBattles(accountId.toInt, wn8, totalUserBattles)
 
   }
 
@@ -100,5 +83,6 @@ object UserWn8 {
     val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$accountId")
     Try(parsedTanksStats.values.asInstanceOf[List[Map[String, Any]]]).recover { case _ => List.empty}.get
   }
+
 
 }

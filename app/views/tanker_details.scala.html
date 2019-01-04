@@ -12,6 +12,7 @@
     <tr><td align="right">T10 Wn8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(t10wn8)">@{"%.2f".format(t10wn8)}</td></tr>
     <tr><td align="right">Wn8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@tanker.get.wn8</td></tr>
     <tr><td align="right">Tier:</td><td>@{"%.2f".format(tanker.get.avgTier)}</td></tr>
+    <tr><td align="right">Last battle:</td><td>@{tanker.get.lastBattle}</td></tr>
     <tr><td align="center" colspan="2"><a href="@routes.TankerDetailsController.refresh(tanker.get.accountId.toString)">Refresh</a></td></tr>
 </table>
 
@@ -19,14 +20,93 @@
 
 <script>
 $(function() {
-    $("#tanks").tablesorter( {sortList: [[2,0],[9,0]]} );
+    $("#tanks1").tablesorter( {sortList: [[2,0],[9,0]]} );
+    $("#tanks2").tablesorter( {sortList: [[2,0],[9,0]]} );
+    $("#tanks3").tablesorter( {sortList: [[2,0],[9,0]]} );
 });
 </script>
 
-<table cellpadding="0" cellspacing="0" align="center" id="tanks" class="user_tanks">
+@if(tanker.get.lastDaySession.nonEmpty) {
+<table cellpadding="0" cellspacing="0" align="center" class="user_tanks">
+    <tr style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastDaySession.get.wn8)">
+        <td><b>Session - today | WN8: @{"%.0f".format(tanker.get.lastDaySession.get.wn8)} Battles: @tanker.get.lastDaySession.get.battles</b></td>
+    </tr>
+</table>
+<table cellpadding="0" cellspacing="0" align="center" id="tanks1" class="user_tanks">
+    <thead>
+    <th></th>
+    <th align="left" style="width: 200px">Tank&nbsp;</th>
+    <th>Tier</th>
+    <th>Ø Frags</th>
+    <th>Ø Spot</th>
+    <th>Ø Dmg</th>
+    <th>Ø Exp</th>
+    <th>% Wins</th>
+    <th>Battles</th>
+    <th>Wn8</th>
+    </thead>
+    @for(tank <- tanker.get.lastDaySession.get.tanks) {
+    <tr>
+        <td align="center"><img src="@tank.imgPath"/></td>
+        <td align="left">@tank.name&nbsp;</td>
+        <td align="center">@tank.tier</td>
+        <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+        <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+        <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
+        <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+        <td align="center">@tank.battles</td>
+        <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+    </tr>
+    }
+</table>
+}
+
+<br/>
+@if(tanker.get.lastWeekSession.nonEmpty) {
+<table cellpadding="0" cellspacing="0" align="center" class="user_tanks">
+    <tr style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastWeekSession.get.wn8)">
+        <td><b>Session - week | WN8: @{"%.0f".format(tanker.get.lastWeekSession.get.wn8)} Battles: @tanker.get.lastWeekSession.get.battles</b></td>
+    </tr>
+</table>
+<table cellpadding="0" cellspacing="0" align="center" id="tanks2" class="user_tanks">
+    <thead>
+    <th></th>
+    <th align="left" style="width: 200px">Tank&nbsp;</th>
+    <th>Tier</th>
+    <th>Ø Frags</th>
+    <th>Ø Spot</th>
+    <th>Ø Dmg</th>
+    <th>Ø Exp</th>
+    <th>% Wins</th>
+    <th>Battles</th>
+    <th>Wn8</th>
+    </thead>
+    @for(tank <- tanker.get.lastWeekSession.get.tanks) {
+    <tr>
+        <td align="center"><img src="@tank.imgPath"/></td>
+        <td align="left">@tank.name&nbsp;</td>
+        <td align="center">@tank.tier</td>
+        <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+        <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+        <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
+        <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+        <td align="center">@tank.battles</td>
+        <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+    </tr>
+    }
+</table>
+}
+
+<br/>
+<table cellpadding="0" cellspacing="0" align="center" class="user_tanks">
+    <tr><td><b>All time</b></td></tr>
+</table>
+<table cellpadding="0" cellspacing="0" align="center" id="tanks3" class="user_tanks">
     <thead>
         <th></th>
-        <th align="left">Tank&nbsp;</th>
+        <th align="left" style="width: 200px">Tank&nbsp;</th>
         <th>Tier</th>
         <th>Ø Frags</th>
         <th>Ø Spot</th>

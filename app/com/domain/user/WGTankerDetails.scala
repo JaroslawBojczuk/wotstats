@@ -2,10 +2,11 @@ package com.domain.user
 
 import java.util.concurrent.TimeUnit
 
-import com.domain.Constants
+import com.domain.{Constants, WN8}
 import com.domain.db.schema.TankerTank
-import com.domain.presentation.model.{TankStats, TankerDetails}
+import com.domain.presentation.model.{TankStats, TankerDetails, TankerSession}
 import com.fasterxml.jackson.databind.JsonNode
+import org.joda.time.LocalDate
 import play.libs.Json
 
 import scala.concurrent.Await
@@ -24,7 +25,7 @@ object WGTankerDetails {
     val userJson = Json.parse(userResponse)
     val count = userJson.findPath("meta").findPath("count").asInt()
 
-    if (count == 1) Some(userJson.findPath("data").findPath("account_id").toString)
+    if (count == 1) Some(userJson.findPath("data").findPath("account_id").toString.toInt)
     else None
   }
 
@@ -59,11 +60,13 @@ object WGTankerDetails {
     val data: JsonNode = userJson.findPath("data")
     val name = data.findPath(accountId.toString).findPath("nickname").asText()
     val clanId = data.findPath(accountId.toString).findPath("clan_id").asText()
+    val dayOfLastBattle = TimeUnit.SECONDS.toDays(Try(data.findPath(accountId.toString).findPath("last_battle_time").asText().toLong).recover { case _ => 0L }.get)
 
-    val accountWn8 = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute).wn8
-    val tanks = Await.result(UserTanksWn8.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
+    val wn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute)
+    val tanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle), 1.minute).sortBy(-_.wn8)
 
-    val battles = tanks.map(_.battles).sum
+    val accountWn8 = wn8WithBattles.wn8
+    val battles = wn8WithBattles.battles
     val wins = tanks.map(_.wins).sum
     val spotted = tanks.map(_.spotted).sum
     val frags = tanks.map(_.frags).sum
@@ -74,12 +77,28 @@ object WGTankerDetails {
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
 
-    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, tanksUi))
+    val date = new LocalDate(0).plusDays(dayOfLastBattle.toInt)
+
+    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle - 1), 1.minute).sortBy(-_.wn8)
+    val lastDaySession = if(previousDayTanks.nonEmpty) {
+      val sessionTanks = WN8.calculateWn8PerTank(tanks, previousDayTanks).map(convertTanksToUi)
+      val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks, previousDayTanks)
+      Some(TankerSession(battles, wn8, sessionTanks))
+    } else None
+
+    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle - 7), 1.minute).sortBy(-_.wn8)
+    val lastWeekSession = if(lastWeekTanks.nonEmpty) {
+      val sessionTanks = WN8.calculateWn8PerTank(tanks, lastWeekTanks).map(convertTanksToUi)
+      val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks, lastWeekTanks)
+      Some(TankerSession(battles, wn8, sessionTanks))
+    } else None
+
+    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, date, tanksUi, lastDaySession, lastWeekSession))
   }
 
   def getDetails(accountName: String): Option[TankerDetails] = {
     findAccountId(accountName) match {
-      case Some(accountId) => getDetails(accountId.toInt)
+      case Some(accountId) => getDetails(accountId)
       case _ => None
     }
   }

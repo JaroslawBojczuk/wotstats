@@ -59,6 +59,7 @@ object TankerTanks {
     def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]]
     def findByAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]]
+    def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]]
   }
 
   class TankerTanksDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankerTanksDao {
@@ -83,6 +84,13 @@ object TankerTanks {
       val q = (for {
          latestDay <- table.filter(_.accountId === accountId).sortBy(_.day.desc).map(_.day).take(1)
          latestTankEntries <- table.filter(_.accountId === accountId).filter(_.day === latestDay)
+      } yield latestTankEntries).result.transactionally
+      db.run(q)
+    }
+
+    override def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]] = {
+      val q = (for {
+        latestTankEntries <- table.filter(_.accountId === accountId).filter(_.day === day)
       } yield latestTankEntries).result.transactionally
       db.run(q)
     }

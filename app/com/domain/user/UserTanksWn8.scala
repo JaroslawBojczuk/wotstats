@@ -1,12 +1,13 @@
 package com.domain.user
 
-import com.domain.Constants
+import com.domain.{Constants, WN8}
 import com.domain.Tanks._
 import com.domain.db.DB
 import com.domain.db.DB.executionContext
 import com.domain.db.schema.TankerTank
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods.{parse, render}
+import com.domain.Converters._
 
 import scala.concurrent.Future
 
@@ -22,9 +23,15 @@ object UserTanksWn8 {
     tanks <- if (tanksFromDb.nonEmpty) Future(tanksFromDb) else refreshTankerTanks(accountId)
   } yield tanks
 
+  def getTankerTanksForDay(accountId: Int, day: Long): Future[Seq[TankerTank]] = for {
+    tanksFromDb: Seq[TankerTank] <- DB.TankerTanksDao.findForAccountIdAndLastDayBattle(accountId, day)
+    tanks <- if (tanksFromDb.nonEmpty) Future(tanksFromDb) else refreshTankerTanks(accountId).flatMap(_ => DB.TankerTanksDao.findForAccountIdAndLastDayBattle(accountId, day))
+
+  } yield tanks
+
   private def calculate(accountId: Int, day: Long): List[TankerTank] = {
 
-    val tanks: Map[Int, Vehicle] = tanksExpectedValues
+    val tanks: Map[Int, VehicleAverages] = tanksExpectedValues
 
     val tanksStatsResponse: String = scala.io.Source.fromURL(s"https://api.worldoftanks.eu/wot/tanks/stats/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId").mkString
     val parsedTanksStats: JValue = render(parse(tanksStatsResponse) \ "data" \ s"$accountId")
@@ -45,35 +52,8 @@ object UserTanksWn8 {
         val battles: Double = tankStatsMap("battles").toDouble
         val averageXp: Double = tankStatsMap("battle_avg_xp").toDouble
 
-        val avg_damage: Double = damage / battles
-        val avg_spot: Double = spot / battles
-        val avg_frags: Double = frags / battles
-        val avg_defence: Double = defence / battles
-        val avg_wins: Double = BigDecimal((wins / battles) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
-
-        val expectedValues = tanks(Integer.valueOf(currentTankId.toString))
-
-        val expFrag: Double = expectedValues.frag
-        val expDmg: Double = expectedValues.dmg
-        val expSpot: Double = expectedValues.spot
-        val expDef: Double = expectedValues.defence
-        val expWin: Double = expectedValues.win
-
-        val rDAMAGE: Double = avg_damage / expDmg
-        val rSPOT: Double = avg_spot / expSpot
-        val rFRAG: Double = avg_frags / expFrag
-        val rDEF: Double = avg_defence / expDef
-        val rWin: Double = avg_wins / expWin
-
-        val rWINc = Math.max(0, (rWin - 0.71) / (1 - 0.71))
-        val rDAMAGEc = Math.max(0, (rDAMAGE - 0.22) / (1 - 0.22))
-        val rFRAGc = Math.max(0, Math.min(rDAMAGEc + 0.2, (rFRAG - 0.12) / (1 - 0.12)))
-        val rSPOTc = Math.max(0, Math.min(rDAMAGEc + 0.1, (rSPOT - 0.38) / (1 - 0.38)))
-        val rDEFc = Math.max(0, Math.min(rDAMAGEc + 0.1, (rDEF - 0.10) / (1 - 0.10)))
-
-        val WN8 = 980 * rDAMAGEc + 210 * rDAMAGEc * rFRAGc + 155 * rFRAGc * rSPOTc + 75 * rDEFc * rFRAGc + 145 * Math.min(1.8, rWINc)
-
-        val humanWN8: Double = BigDecimal(WN8).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+        val expectedForVehicle = tanks(Integer.valueOf(currentTankId.toString))
+        val humanWN8: Double = WN8.calculateWn8Value(toVehicleFromMap(elem), expectedForVehicle)
 
         Some(TankerTank(accountId, currentTankId.toInt, frags, damage, spot, defence, battles.toInt, wins.toInt, averageXp, humanWN8, day))
       } else {
