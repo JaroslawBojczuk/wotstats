@@ -1,13 +1,17 @@
 package controllers
 
+import com.domain.WN8
 import com.domain.clans.ClanWn8
 import com.domain.db.DB
 import com.domain.db.DB.executionContext
 import com.domain.db.schema.{Tanker, TankerHistory}
 import com.domain.presentation.model.TankStats
-import com.domain.user.{UserWn8, WGTankerDetails}
+import com.domain.user.{UserTanksWn8, WGTankerDetails}
 import javax.inject._
+import play.api.Logger
 import play.api.mvc._
+
+import scala.collection.parallel.ForkJoinTaskSupport
 
 
 /**
@@ -34,15 +38,26 @@ class HomeController @Inject() extends Controller {
     Ok(views.html.tanks(res))
   }
 
+  private val taskSupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(10))
+
   def refreshUsers: Action[AnyContent] = Action.async { implicit request =>
-    DB.TankersDao.getAll.map(users => {
-      val tankersHistory = users.par.map(accountId => {
-        val day = WGTankerDetails.getDayOfLastBattle(accountId)
-        val userWn8 = UserWn8.calculateWn8(accountId)
-        TankerHistory(userWn8.accountId, userWn8.battles, userWn8.wn8, day)
-      }).seq
-      DB.TankerHistoryDao.addOrReplaceCurrentDayBatch(tankersHistory)
-      DB.TankersDao.addOrUpdate(tankersHistory.map(tanker => Tanker(tanker.accountId, tanker.battles, tanker.wn8)))
+    DB.TankersDao.getAll.map((users: Seq[Int]) => {
+      Logger.debug(s"Users to refresh: ${users.size}")
+      users.grouped(100).foreach(u => {
+        val par = u.par
+        par.tasksupport = taskSupport
+        val (tankersHistory, tanks) = par.map(accountId => {
+          Logger.debug(s"[$accountId] Refreshing data for user")
+          val day = WGTankerDetails.getDayOfLastBattle(accountId)
+          val tanks = UserTanksWn8.getTankerTanksForHisLastDay(accountId, day)
+          val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks, Seq.empty)
+          (TankerHistory(accountId, battles, wn8, day), tanks)
+        }).seq.unzip
+        Logger.debug(s"Storing into DB")
+        DB.TankerHistoryDao.addOrReplaceCurrentDayBatch(tankersHistory)
+        DB.TankersDao.addOrUpdate(tankersHistory.map(tanker => Tanker(tanker.accountId, tanker.battles, tanker.wn8)))
+        DB.TankerTanksDao.addOrReplaceInBatch(tanks.flatten)
+      })
     }).map(_ => {
       Ok(views.html.success())
     })
@@ -55,6 +70,4 @@ class HomeController @Inject() extends Controller {
       Ok(views.html.success())
     })
   }
-
-
 }

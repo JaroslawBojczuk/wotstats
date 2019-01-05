@@ -56,7 +56,8 @@ object TankerTanks {
 
   trait TankerTanksDao {
     def add(tankerTanks: Seq[TankerTank]): Future[Option[Int]]
-    def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]]
+    def addOrReplaceGivenDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]]
+    def addOrReplaceInBatch(tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]]
     def findByAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]]
@@ -72,12 +73,24 @@ object TankerTanks {
       db.run(table.filter(_.accountId === accountId).result)
     }
 
-    override def addOrReplaceCurrentDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]] = {
+    override def addOrReplaceGivenDay(accountId: Int, day: Long, tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]] = {
       val q = (for {
         _ <- table.filter(tank => tank.accountId === accountId && tank.day === day).delete
         _ <- table ++= tankerTanks
       } yield()).transactionally
       db.run(q).map(_ => tankerTanks)
+    }
+
+    override def addOrReplaceInBatch(tankerTanks: Seq[TankerTank]): Future[Seq[TankerTank]] = {
+      val delete = (for {
+        res <- DBIO.sequence(tankerTanks.map(t => (t.accountId, t.day)).distinct.map {
+          tanker => table.filter(tanks => tanks.accountId === tanker._1 && tanks.day === tanker._2).delete
+        })
+      } yield res).transactionally
+      val add = (for {
+        _ <- table ++= tankerTanks
+      } yield()).transactionally
+      db.run(delete).flatMap(_ => db.run(add).map(_ => tankerTanks))
     }
 
     override def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]] = {

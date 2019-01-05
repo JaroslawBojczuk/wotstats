@@ -60,10 +60,10 @@ object WGTankerDetails {
     val data: JsonNode = userJson.findPath("data")
     val name = data.findPath(accountId.toString).findPath("nickname").asText()
     val clanId = data.findPath(accountId.toString).findPath("clan_id").asText()
-    val dayOfLastBattle = TimeUnit.SECONDS.toDays(Try(data.findPath(accountId.toString).findPath("last_battle_time").asText().toLong).recover { case _ => 0L }.get)
-
     val wn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute)
-    val tanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle), 1.minute).sortBy(-_.wn8)
+
+    val tanks = Await.result(UserTanksWn8.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
+    val dayOfLastBattle = TimeUnit.SECONDS.toDays(Try(data.findPath(accountId.toString).findPath("last_battle_time").asText().toLong).recover { case _ => 0L }.get)
 
     val accountWn8 = wn8WithBattles.wn8
     val battles = wn8WithBattles.battles
@@ -73,11 +73,8 @@ object WGTankerDetails {
 
     val tanksUi = tanks.map(convertTanksToUi)
     val avgTier = tanksUi.map(t => t.tier * t.battles).sum.toDouble / tanksUi.map(t => if (t.tier > 0) t.battles else 0).sum.toDouble
-
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
-
-    val date = new LocalDate(0).plusDays(dayOfLastBattle.toInt)
 
     val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle - 1), 1.minute).sortBy(-_.wn8)
     val lastDaySession = if(previousDayTanks.nonEmpty) {
@@ -93,7 +90,7 @@ object WGTankerDetails {
       Some(TankerSession(battles, wn8, sessionTanks))
     } else None
 
-    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, date, tanksUi, lastDaySession, lastWeekSession))
+    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, new LocalDate(0).plusDays(dayOfLastBattle.toInt), tanksUi, lastDaySession, lastWeekSession))
   }
 
   def getDetails(accountName: String): Option[TankerDetails] = {
