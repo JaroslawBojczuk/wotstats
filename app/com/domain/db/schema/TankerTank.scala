@@ -43,7 +43,11 @@ class TankerTankTable(tag: Tag) extends Table[TankerTank](tag, TankerTanks.table
 
   def day = column[Long]("day")
 
-  def accountIdFKey = foreignKey("TANKER_TANKS_ACCOUNT_ID_FK", accountId, Tankers.table)(_.accountId, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
+  def idx1 = index("TANKER_TANKS_ACCOUNT_ID_INDEX", accountId, unique = false)
+
+  def idx2 = index("TANKER_TANKS_ACCOUNT_ID_DAY_INDEX", (accountId, day), unique = false)
+
+  //def accountIdFKey = foreignKey("TANKER_TANKS_ACCOUNT_ID_FK", accountId, Tankers.table)(_.accountId, onUpdate=ForeignKeyAction.Restrict, onDelete=ForeignKeyAction.Cascade)
 
   def * = (accountId, tankId, frags, damageDealt, spotted, droppedCapturePoints, battles, wins, battleAvgXp, wn8, day) <> (TankerTank.tupled, TankerTank.unapply)
 
@@ -61,6 +65,7 @@ object TankerTanks {
     def findByAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]]
+    def findPreviousDayForAccountId(accountId: Int, referenceDay: Long): Future[Option[Long]]
   }
 
   class TankerTanksDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankerTanksDao {
@@ -99,6 +104,13 @@ object TankerTanks {
          latestTankEntries <- table.filter(_.accountId === accountId).filter(_.day === latestDay)
       } yield latestTankEntries).result.transactionally
       db.run(q)
+    }
+
+    override def findPreviousDayForAccountId(accountId: Int, referenceDay: Long): Future[Option[Long]] = {
+      val q = (for {
+        previousDay <- table.filter(_.accountId === accountId).map(_.day).distinct.filter(_ <= referenceDay).sortBy(_.desc).take(2)
+      } yield previousDay).result.transactionally
+      db.run(q).map(_.lastOption)
     }
 
     override def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]] = {

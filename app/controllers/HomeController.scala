@@ -6,7 +6,7 @@ import com.domain.db.DB
 import com.domain.db.DB.executionContext
 import com.domain.db.schema.{Tanker, TankerHistory}
 import com.domain.presentation.model.TankStats
-import com.domain.user.{UserTanksWn8, WGTankerDetails}
+import com.domain.user.UserTanksWn8
 import javax.inject._
 import play.api.Logger
 import play.api.mvc._
@@ -48,12 +48,11 @@ class HomeController @Inject() extends Controller {
         par.tasksupport = taskSupport
         val (tankersHistory, tanks) = par.map(accountId => {
           Logger.debug(s"[$accountId] Refreshing data for user")
-          val day = WGTankerDetails.getDayOfLastBattle(accountId)
-          val tanks = UserTanksWn8.getTankerTanksForHisLastDay(accountId, day)
-          val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks, Seq.empty)
-          (TankerHistory(accountId, battles, wn8, day), tanks)
+          val tanks = UserTanksWn8.getTankerTanksForHisLastDay(accountId)
+          val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks)
+          (TankerHistory(accountId, battles, wn8, tanks.map(_.day).headOption.getOrElse(0L)), tanks)
         }).seq.unzip
-        Logger.debug(s"Storing into DB")
+        Logger.debug(s"Inserting into database")
         DB.TankerHistoryDao.addOrReplaceCurrentDayBatch(tankersHistory)
         DB.TankersDao.addOrUpdate(tankersHistory.map(tanker => Tanker(tanker.accountId, tanker.battles, tanker.wn8)))
         DB.TankerTanksDao.addOrReplaceInBatch(tanks.flatten)

@@ -8,6 +8,7 @@ import com.domain.db.schema.TankerTank
 import com.domain.{Constants, WN8}
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods.{parse, render}
+import play.api.Logger
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -18,7 +19,7 @@ object UserTanksWn8 {
     if (WGTankerDetails.getDayOfLastBattle(accountId) == currentDay) Some(fetchTanks(accountId, currentDay)) else None
   }
 
-  def getTankerTanksForHisLastDay(accountId: Int, day: Long): Seq[TankerTank] = fetchTanks(accountId, day)
+  def getTankerTanksForHisLastDay(accountId: Int): Seq[TankerTank] = fetchTanks(accountId, WGTankerDetails.getDayOfLastBattle(accountId))
 
   def refreshTankerTanks(accountId: Int): Future[Seq[TankerTank]] = {
     val day = WGTankerDetails.getDayOfLastBattle(accountId)
@@ -37,6 +38,13 @@ object UserTanksWn8 {
       DB.TankerTanksDao.findForAccountIdAndLastDayBattle(accountId, day)
     }
   } yield tanks
+
+  def getTankerTanksForPreviousDay(accountId: Int, referenceDay: Long): Future[Seq[TankerTank]] = {
+    for {
+      prevDay <- DB.TankerTanksDao.findPreviousDayForAccountId(accountId, referenceDay)
+      tanks <- getTankerTanksForDay(accountId, prevDay.getOrElse(0))
+    } yield tanks
+  }
 
   private def fetchTanks(accountId: Int, day: Long): List[TankerTank] = {
 

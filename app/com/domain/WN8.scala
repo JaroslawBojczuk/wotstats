@@ -1,10 +1,9 @@
 package com.domain
 
+import com.domain.Converters._
 import com.domain.Tanks.{VehicleAverages, tanksExpectedValues}
+import com.domain.Utils._
 import com.domain.db.schema.TankerTank
-import Converters._
-import com.domain.presentation.model.TankerSession
-import com.domain.user.UserWn8.UserWn8WithBattles
 
 object WN8 {
 
@@ -33,29 +32,19 @@ object WN8 {
     })
   }
 
-  def calculateTotalWn8AndBattles(actual: Seq[TankerTank], previous: Seq[TankerTank]): (Double, Int) = {
-    val diffs: Seq[(VehicleAverages, VehicleAverages, Int)] = tankDiff(actual, previous).map(currentTank => {
+  def calculateTotalWn8AndBattles(tanks: Seq[TankerTank]): (Double, Int) = {
+    val diffs: Seq[(VehicleAverages, VehicleAverages, Int)] = tanks.map(currentTank => {
       val tankTotal = toVehicleFromTank(currentTank)
       val expected = tanksExpectedValues(currentTank.tankId).multiplyBy(currentTank.battles)
       val battles = currentTank.battles
       (tankTotal, expected, battles)
     })
-    if(diffs.isEmpty) return (0,0)
+    if (diffs.isEmpty) return (0, 0)
     val (total, expected, battles) = diffs.reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
     (calculateWn8Value(total, expected), battles)
   }
 
-  private def tankDiff(actual: Seq[TankerTank], previous: Seq[TankerTank]) = {
-    actual.union(previous).groupBy(_.tankId).mapValues(tanks => tanks.reduce((a, b) => {
-      TankerTank(a.accountId, a.tankId,
-        Math.abs(a.frags - b.frags),
-        Math.abs(a.damageDealt - b.damageDealt),
-        Math.abs(a.spotted - b.spotted),
-        Math.abs(a.droppedCapturePoints - b.droppedCapturePoints),
-        Math.abs(a.battles - b.battles),
-        Math.abs(a.wins - b.wins),
-        if (a.battles > b.battles) a.battleAvgXp else b.battleAvgXp,
-        0, Math.max(a.day, b.day))
-    })).values.filter(_.battles > 0).toSeq
+  def calculateTotalWn8AndBattles(actual: Seq[TankerTank], previous: Seq[TankerTank]): (Double, Int) = {
+    calculateTotalWn8AndBattles(tankDiff(actual, previous))
   }
 }

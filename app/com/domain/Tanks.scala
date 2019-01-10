@@ -3,6 +3,7 @@ package com.domain
 import java.nio.file.Files
 
 import com.domain.Constants.EXPECTED_TANKS_VALUES_CSV_PATH
+
 import scala.collection.JavaConverters._
 
 object Tanks {

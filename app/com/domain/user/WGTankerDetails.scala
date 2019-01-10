@@ -2,7 +2,7 @@ package com.domain.user
 
 import java.util.concurrent.TimeUnit
 
-import com.domain.{Constants, WN8}
+import com.domain.{Constants, Utils, WN8}
 import com.domain.db.schema.TankerTank
 import com.domain.presentation.model.{TankStats, TankerDetails, TankerSession}
 import com.fasterxml.jackson.databind.JsonNode
@@ -54,6 +54,13 @@ object WGTankerDetails {
     }
   }
 
+  def getDetails(accountName: String): Option[TankerDetails] = {
+    findAccountId(accountName) match {
+      case Some(accountId) => getDetails(accountId)
+      case _ => None
+    }
+  }
+
   def getDetails(accountId: Int): Some[TankerDetails] = {
     val userResponse = scala.io.Source.fromURL(url(accountId.toString)).mkString
     val userJson = Json.parse(userResponse)
@@ -63,7 +70,7 @@ object WGTankerDetails {
     val wn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(accountId.toString), 1.minute)
 
     val tanks = Await.result(UserTanksWn8.getTankerLatestTanks(accountId), 1.minute).sortBy(-_.wn8)
-    val dayOfLastBattle = TimeUnit.SECONDS.toDays(Try(data.findPath(accountId.toString).findPath("last_battle_time").asText().toLong).recover { case _ => 0L }.get)
+    val dayOfLastBattle = tanks.headOption.map(_.day).getOrElse(0L)
 
     val accountWn8 = wn8WithBattles.wn8
     val battles = wn8WithBattles.battles
@@ -76,28 +83,21 @@ object WGTankerDetails {
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
 
-    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle - 1), 1.minute).sortBy(-_.wn8)
-    val lastDaySession = if(previousDayTanks.nonEmpty) {
-      val sessionTanks = WN8.calculateWn8PerTank(tanks, previousDayTanks).map(convertTanksToUi)
-      val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks, previousDayTanks)
-      Some(TankerSession(battles, wn8, sessionTanks))
-    } else None
+    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle), 1.minute)
+    val lastDaySession = if(previousDayTanks.nonEmpty) sessionStats(tanks, previousDayTanks) else None
 
-    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForDay(accountId, dayOfLastBattle - 7), 1.minute).sortBy(-_.wn8)
-    val lastWeekSession = if(lastWeekTanks.nonEmpty) {
-      val sessionTanks = WN8.calculateWn8PerTank(tanks, lastWeekTanks).map(convertTanksToUi)
-      val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks, lastWeekTanks)
-      Some(TankerSession(battles, wn8, sessionTanks))
-    } else None
+    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle - 7), 1.minute).sortBy(-_.wn8)
+    val lastWeekSession = if(lastWeekTanks.nonEmpty) sessionStats(tanks, lastWeekTanks) else None
 
     Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8, new LocalDate(0).plusDays(dayOfLastBattle.toInt), tanksUi, lastDaySession, lastWeekSession))
   }
 
-  def getDetails(accountName: String): Option[TankerDetails] = {
-    findAccountId(accountName) match {
-      case Some(accountId) => getDetails(accountId)
-      case _ => None
-    }
+  private def sessionStats(latestTanks: Seq[TankerTank], referenceTanks: Seq[TankerTank]): Option[TankerSession] = {
+    val sessionTanks = WN8.calculateWn8PerTank(latestTanks, referenceTanks).map(convertTanksToUi)
+    val tanksPlayed = Utils.tankDiff(latestTanks, referenceTanks)
+    val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanksPlayed)
+    if (battles > 0) Some(TankerSession(battles, wn8, sessionTanks)) else None
+    Some(TankerSession(battles, wn8, sessionTanks))
   }
 
 }
