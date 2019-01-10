@@ -15,8 +15,42 @@
     <tr><td align="center" colspan="2"><a href="@routes.TankerDetailsController.refresh(tanker.get.accountId.toString)">Refresh</a></td></tr>
 </table>
 
-<br/><br/>
 
+
+<script type="text/javascript">
+google.charts.load('current', {packages: ['corechart', 'line']});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+    var data = new google.visualization.DataTable();
+      data.addColumn('date', 'Day');
+      data.addColumn('number', 'WN8');
+      data.addRows([
+@tanker.get.history.mkString(",")
+]);
+
+var options = {
+        backgroundColor: 'silver',
+        hAxis: {
+          format: 'MMM dd',
+          maxTextLines: '1',
+          textPosition: 'out'
+        },
+        vAxis: {
+          textPosition: 'in'
+        },
+        legend: {
+          position: 'none'
+        },
+        chartArea: {width: '100%', height: '90%', top: 0},
+        lineWidth: '2',
+        pointSize: '5'
+      };
+
+var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+chart.draw(data, options);
+}
+</script>
 <script>
 $(function() {
     $("#tanks1").tablesorter( {sortList: [[2,0],[9,0]]} );
@@ -32,115 +66,159 @@ function hideUnhide(tableId) {
   }
 }
 </script>
+<br/><br/>
+<table align="center" style="min-width: 940px;">
+    <tr>
+        <td><div id="curve_chart" style="width: 100%; height: 200px; border: 1px solid black;"></div></td>
+    </tr>
+</table>
 
 @if(tanker.get.lastDaySession.nonEmpty) {
-<table cellpadding="0" cellspacing="0" align="center" class="user_tanks" onclick="hideUnhide('tanks1')">
-    <tr style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastDaySession.get.wn8)">
-        <td><b>Session - day | WN8: @{"%.0f".format(tanker.get.lastDaySession.get.wn8)} Battles: @tanker.get.lastDaySession.get.battles</b></td>
-    </tr>
-</table>
-<table cellpadding="0" cellspacing="0" align="center" id="tanks1" class="user_tanks">
+<table cellpadding="0" cellspacing="0" align="center" class="user_session">
     <thead>
-    <th></th>
-    <th align="left" style="width: 200px">Tank&nbsp;</th>
-    <th>Tier</th>
-    <th>Ø Frags</th>
-    <th>Ø Spot</th>
-    <th>Ø Dmg</th>
-    <th>Ø Exp</th>
-    <th>% Wins</th>
-    <th>Battles</th>
-    <th>Wn8</th>
+        <th onclick="hideUnhide('tanks1')" style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastDaySession.get.wn8)">
+            <b>Session - day | WN8: @{"%.0f".format(tanker.get.lastDaySession.get.wn8)}</b>
+        </th>
     </thead>
-    @for(tank <- tanker.get.lastDaySession.get.tanks) {
     <tr>
-        <td align="center"><img src="@tank.imgPath"/></td>
-        <td align="left">@tank.name&nbsp;</td>
-        <td align="center">@tank.tier</td>
-        <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
-        <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
-        <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
-        <td align="right">@{"%.0f".format(tank.avgXp)}</td>
-        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
-        <td align="center">@tank.battles</td>
-        <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+        <td>
+            <table width="100%" style="border: 0px">
+                <tr>
+                    <td align="right">Battles:</td><td align="left">@tanker.get.lastDaySession.get.battles</td>
+                    <td align="right">Ø Wins:</td><td align="left">@{"%.2f".format(tanker.get.lastDaySession.get.avgWins)}</td>
+                    <td align="right">Ø Frags:</td><td align="left">@{"%.2f".format(tanker.get.lastDaySession.get.avgFrags)}</td>
+                    <td align="right">Ø Spots:</td><td align="left">@{"%.2f".format(tanker.get.lastDaySession.get.avgSpots)}</td>
+                    <td align="right">Ø Damage:</td><td align="left">@{"%.0f".format(tanker.get.lastDaySession.get.avgDamage)}</td>
+                </tr>
+            </table>
+        </td>
     </tr>
-    }
+    <tr><td>
+        <table cellpadding="0" cellspacing="0" align="center" id="tanks1" class="user_tanks">
+            <thead>
+            <th></th>
+            <th align="left" style="width: 200px">Tank&nbsp;</th>
+            <th>Tier</th>
+            <th>Ø Frags</th>
+            <th>Ø Spot</th>
+            <th>Ø Dmg</th>
+            <th>Ø Exp</th>
+            <th>% Wins</th>
+            <th>Battles</th>
+            <th>Wn8</th>
+            </thead>
+            @for(tank <- tanker.get.lastDaySession.get.tanks) {
+            <tr>
+                <td align="center"><img src="@tank.imgPath"/></td>
+                <td align="left">@tank.name&nbsp;</td>
+                <td align="center">@tank.tier</td>
+                <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+                <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+                <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
+                <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+                <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+                <td align="center">@tank.battles</td>
+                <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+            </tr>
+            }
+        </table>
+    </td></tr>
 </table>
+
 }
 
 <br/>
 @if(tanker.get.lastWeekSession.nonEmpty) {
-<table cellpadding="0" cellspacing="0" align="center" class="user_tanks" onclick="hideUnhide('tanks2')">
-    <tr style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastWeekSession.get.wn8)">
-        <td><b>Session - week | WN8: @{"%.0f".format(tanker.get.lastWeekSession.get.wn8)} Battles: @tanker.get.lastWeekSession.get.battles</b></td>
-    </tr>
-</table>
-<table cellpadding="0" cellspacing="0" align="center" id="tanks2" class="user_tanks" style="display: none">
+<table cellpadding="0" cellspacing="0" align="center" class="user_session">
     <thead>
-    <th></th>
-    <th align="left" style="width: 200px">Tank&nbsp;</th>
-    <th>Tier</th>
-    <th>Ø Frags</th>
-    <th>Ø Spot</th>
-    <th>Ø Dmg</th>
-    <th>Ø Exp</th>
-    <th>% Wins</th>
-    <th>Battles</th>
-    <th>Wn8</th>
+    <th onclick="hideUnhide('tanks2')" style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastWeekSession.get.wn8)">
+        <b>Session - week | WN8: @{"%.0f".format(tanker.get.lastWeekSession.get.wn8)}</b>
+    </th>
     </thead>
-    @for(tank <- tanker.get.lastWeekSession.get.tanks) {
     <tr>
-        <td align="center"><img src="@tank.imgPath"/></td>
-        <td align="left">@tank.name&nbsp;</td>
-        <td align="center">@tank.tier</td>
-        <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
-        <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
-        <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
-        <td align="right">@{"%.0f".format(tank.avgXp)}</td>
-        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
-        <td align="center">@tank.battles</td>
-        <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+        <td>
+            <table width="100%" style="border: 0px">
+                <tr>
+                    <td align="right">Battles:</td><td align="left">@tanker.get.lastWeekSession.get.battles</td>
+                    <td align="right">Ø Wins:</td><td align="left">@{"%.2f".format(tanker.get.lastWeekSession.get.avgWins)}</td>
+                    <td align="right">Ø Frags:</td><td align="left">@{"%.2f".format(tanker.get.lastWeekSession.get.avgFrags)}</td>
+                    <td align="right">Ø Spots:</td><td align="left">@{"%.2f".format(tanker.get.lastWeekSession.get.avgSpots)}</td>
+                    <td align="right">Ø Damage:</td><td align="left">@{"%.0f".format(tanker.get.lastWeekSession.get.avgDamage)}</td>
+                </tr>
+            </table>
+        </td>
     </tr>
-    }
+    <tr><td>
+        <table cellpadding="0" cellspacing="0" align="center" id="tanks2" class="user_tanks" style="display: none">
+            <thead>
+            <th></th>
+            <th align="left" style="width: 200px">Tank&nbsp;</th>
+            <th>Tier</th>
+            <th>Ø Frags</th>
+            <th>Ø Spot</th>
+            <th>Ø Dmg</th>
+            <th>Ø Exp</th>
+            <th>% Wins</th>
+            <th>Battles</th>
+            <th>Wn8</th>
+            </thead>
+            @for(tank <- tanker.get.lastWeekSession.get.tanks) {
+            <tr>
+                <td align="center"><img src="@tank.imgPath"/></td>
+                <td align="left">@tank.name&nbsp;</td>
+                <td align="center">@tank.tier</td>
+                <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+                <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+                <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
+                <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+                <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+                <td align="center">@tank.battles</td>
+                <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+            </tr>
+            }
+        </table>
+    </td></tr>
 </table>
 }
 
 <br/>
-<table cellpadding="0" cellspacing="0" align="center" class="user_tanks" onclick="hideUnhide('tanks3')">
-    <tr style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">
-        <td><b>All time | WN8: @{"%.0f".format(tanker.get.wn8)} Battles: @tanker.get.battles</b></td>
-    </tr>
-</table>
-<table cellpadding="0" cellspacing="0" align="center" id="tanks3" class="user_tanks" style="display: none">
+<table cellpadding="0" cellspacing="0" align="center" class="user_session">
     <thead>
-        <th></th>
-        <th align="left" style="width: 200px">Tank&nbsp;</th>
-        <th>Tier</th>
-        <th>Ø Frags</th>
-        <th>Ø Spot</th>
-        <th>Ø Dmg</th>
-        <th>Ø Exp</th>
-        <th>% Wins</th>
-        <th>Battles</th>
-        <th>Wn8</th>
+    <th onclick="hideUnhide('tanks3')" style="line-height: 25px; border-bottom: 0px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">
+        <b>All time | WN8: @{"%.0f".format(tanker.get.wn8)}</b>
+    </th>
     </thead>
-    @for(tank <- tanker.get.tanks) {
-    <tr>
-        <td align="center"><img src="@tank.imgPath"/></td>
-        <td align="left">@tank.name&nbsp;</td>
-        <td align="center">@tank.tier</td>
-        <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
-        <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
-        <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
-        <td align="right">@{"%.0f".format(tank.avgXp)}</td>
-        <td align="center">@{"%.2f".format(tank.avgWins)}</td>
-        <td align="center">@tank.battles</td>
-        <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
-    </tr>
-    }
+    <tr><td>
+        <table cellpadding="0" cellspacing="0" align="center" id="tanks3" class="user_tanks" style="display: none">
+            <thead>
+            <th></th>
+            <th align="left" style="width: 200px">Tank&nbsp;</th>
+            <th>Tier</th>
+            <th>Ø Frags</th>
+            <th>Ø Spot</th>
+            <th>Ø Dmg</th>
+            <th>Ø Exp</th>
+            <th>% Wins</th>
+            <th>Battles</th>
+            <th>Wn8</th>
+            </thead>
+            @for(tank <- tanker.get.tanks) {
+            <tr>
+                <td align="center"><img src="@tank.imgPath"/></td>
+                <td align="left">@tank.name&nbsp;</td>
+                <td align="center">@tank.tier</td>
+                <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+                <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+                <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
+                <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+                <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+                <td align="center">@tank.battles</td>
+                <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+            </tr>
+            }
+        </table>
+    </td></tr>
 </table>
-
 } else {
 Not found
 }

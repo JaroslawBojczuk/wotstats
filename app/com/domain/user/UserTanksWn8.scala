@@ -8,7 +8,6 @@ import com.domain.db.schema.TankerTank
 import com.domain.{Constants, WN8}
 import org.json4s.JValue
 import org.json4s.jackson.JsonMethods.{parse, render}
-import play.api.Logger
 
 import scala.concurrent.Future
 import scala.util.Try
@@ -57,7 +56,7 @@ object UserTanksWn8 {
       case _ => return List.empty
     }.get
 
-    if(tanksStatsAsList == null) return List.empty
+    if (tanksStatsAsList == null) return List.empty
 
     tanksStatsAsList.flatMap(elem => {
       val currentTankId = elem("tank_id").toString

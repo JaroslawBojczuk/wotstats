@@ -43,7 +43,7 @@ object TankersHistory {
   class TankerHistoryDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankerHistoryDao {
 
     override def findByAccountId(accountId: Int): Future[Seq[TankerHistory]] = {
-      db.run(table.filter(_.accountId === accountId).result)
+      db.run(table.filter(_.accountId === accountId).sortBy(_.day).result)
     }
 
     override def add(tankerHistory: TankerHistory): Future[Int] = {
