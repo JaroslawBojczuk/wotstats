@@ -1,15 +1,10 @@
 @(tanker: Option[com.domain.presentation.model.TankerDetails])(implicit request: RequestHeader)
 
-@main("Welcome to Play", request.session.get("user")) {
+@main("WoT Stats", request.session.get("user")) {
 @if(tanker.isDefined) {
 
 <table align="center">
     <tr><td align="right">Name:</td><td>@tanker.get.name</td></tr>
-    <tr><td align="right">Battles:</td><td>@tanker.get.battles</td></tr>
-    <tr><td align="right">Win ratio:</td><td>@{"%.2f".format(tanker.get.winratio)}%</td></tr>
-    <tr><td align="right">Spots:</td><td>@{"%.2f".format(tanker.get.avgSpot)}</td></tr>
-    <tr><td align="right">Frags:</td><td>@{"%.2f".format(tanker.get.avgFrags)}</td></tr>
-    <tr><td align="right">Wn8:</td><td class="@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@tanker.get.wn8</td></tr>
     <tr><td align="right">Tier:</td><td>@{"%.2f".format(tanker.get.avgTier)}</td></tr>
     <tr><td align="right">Last battle:</td><td>@{tanker.get.lastBattle}</td></tr>
     <tr><td align="center" colspan="2"><a href="@routes.TankerDetailsController.refresh(tanker.get.accountId.toString)">Refresh</a></td></tr>
@@ -30,21 +25,22 @@ function drawChart() {
 ]);
 
 var options = {
-        backgroundColor: 'silver',
+        backgroundColor: {
+            fill: 'silver'
+        },
         hAxis: {
-          format: 'MMM dd',
+          format: 'dd.MMM',
           maxTextLines: '1',
           textPosition: 'out'
         },
         vAxis: {
           textPosition: 'in'
         },
-        legend: {
-          position: 'none'
-        },
-        chartArea: {width: '100%', height: '90%', top: 0},
+        legend: 'none',
+        chartArea: {width: '99%', height: '90%', top: 0},
         lineWidth: '2',
-        pointSize: '5'
+        pointSize: '10',
+        dataOpacity: 0.3
       };
 
 var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
@@ -56,6 +52,7 @@ $(function() {
     $("#tanks1").tablesorter( {sortList: [[2,0],[9,0]]} );
     $("#tanks2").tablesorter( {sortList: [[2,0],[9,0]]} );
     $("#tanks3").tablesorter( {sortList: [[2,0],[9,0]]} );
+    $("#tanks4").tablesorter( {sortList: [[2,0],[9,0]]} );
 });
 function hideUnhide(tableId) {
   var x = document.getElementById(tableId);
@@ -67,32 +64,67 @@ function hideUnhide(tableId) {
 }
 </script>
 <br/><br/>
-<table align="center" style="min-width: 940px;">
+
+<table align="center" style="min-width: 940px;" class="user_session_summary">
+    <tr>
+        <td></td><td>General</td><td>Last day</td><td>Last week</td><td>Last month</td>
+    </tr>
+    <tr><td>Battles</td>
+        <td>@tanker.get.battles</td>
+        <td>@tanker.get.lastDaySession.get.battles</td>
+        <td>@tanker.get.lastWeekSession.get.battles</td>
+        <td>@tanker.get.lastMonthSession.get.battles</td>
+    </tr>
+    <tr>
+        <td>% Wins</td>
+        <td>@{"%.2f".format(tanker.get.winratio)}%</td>
+        <td>@{"%.0f".format(tanker.get.lastDaySession.get.avgWins)}%</td>
+        <td>@{"%.0f".format(tanker.get.lastWeekSession.get.avgWins)}%</td>
+        <td>@{"%.0f".format(tanker.get.lastMonthSession.get.avgWins)}%</td>
+    </tr>
+    <tr>
+        <td>Ø Frags</td>
+        <td>@{"%.2f".format(tanker.get.avgFrags)}</td>
+        <td>@{"%.2f".format(tanker.get.lastDaySession.get.avgFrags)}</td>
+        <td>@{"%.2f".format(tanker.get.lastWeekSession.get.avgFrags)}</td>
+        <td>@{"%.2f".format(tanker.get.lastMonthSession.get.avgFrags)}</td>
+    </tr>
+    <tr>
+        <td>Ø Spots</td>
+        <td>@{"%.2f".format(tanker.get.avgSpots)}</td>
+        <td>@{"%.2f".format(tanker.get.lastDaySession.get.avgSpots)}</td>
+        <td>@{"%.2f".format(tanker.get.lastWeekSession.get.avgSpots)}</td>
+        <td>@{"%.2f".format(tanker.get.lastMonthSession.get.avgSpots)}</td>
+    </tr>
+    <tr>
+        <td>Ø Damage</td>
+        <td>@{"%.2f".format(tanker.get.avgDamage)}</td>
+        <td>@{"%.2f".format(tanker.get.lastDaySession.get.avgDamage)}</td>
+        <td>@{"%.2f".format(tanker.get.lastWeekSession.get.avgDamage)}</td>
+        <td>@{"%.2f".format(tanker.get.lastMonthSession.get.avgDamage)}</td>
+    </tr>
+    <tr style="font-weight: bold">
+        <td>WN8</td>
+        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">@{"%.0f".format(tanker.get.wn8)}</td>
+        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastDaySession.get.wn8)">@{"%.2f".format(tanker.get.lastDaySession.get.wn8)}</td>
+        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastWeekSession.get.wn8)">@{"%.2f".format(tanker.get.lastWeekSession.get.wn8)}</td>
+        <td class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastMonthSession.get.wn8)">@{"%.2f".format(tanker.get.lastMonthSession.get.wn8)}</td>
+    </tr>
+</table>
+
+<table align="center" class="user_session_chart" cellpadding="0" cellspacing="0">
     <tr>
         <td><div id="curve_chart" style="width: 100%; height: 200px; border: 1px solid black;"></div></td>
     </tr>
 </table>
 
 @if(tanker.get.lastDaySession.nonEmpty) {
-<table cellpadding="0" cellspacing="0" align="center" class="user_session">
+<table cellpadding="0" cellspacing="0" align="center" class="user_session_tanks">
     <thead>
         <th onclick="hideUnhide('tanks1')" style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastDaySession.get.wn8)">
-            <b>Session - day | WN8: @{"%.0f".format(tanker.get.lastDaySession.get.wn8)}</b>
+            <b>Session tanks - day | WN8: @{"%.0f".format(tanker.get.lastDaySession.get.wn8)}</b>
         </th>
     </thead>
-    <tr>
-        <td>
-            <table width="100%" style="border: 0px">
-                <tr>
-                    <td align="right">Battles:</td><td align="left">@tanker.get.lastDaySession.get.battles</td>
-                    <td align="right">Ø Wins:</td><td align="left">@{"%.2f".format(tanker.get.lastDaySession.get.avgWins)}</td>
-                    <td align="right">Ø Frags:</td><td align="left">@{"%.2f".format(tanker.get.lastDaySession.get.avgFrags)}</td>
-                    <td align="right">Ø Spots:</td><td align="left">@{"%.2f".format(tanker.get.lastDaySession.get.avgSpots)}</td>
-                    <td align="right">Ø Damage:</td><td align="left">@{"%.0f".format(tanker.get.lastDaySession.get.avgDamage)}</td>
-                </tr>
-            </table>
-        </td>
-    </tr>
     <tr><td>
         <table cellpadding="0" cellspacing="0" align="center" id="tanks1" class="user_tanks">
             <thead>
@@ -116,7 +148,7 @@ function hideUnhide(tableId) {
                 <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
                 <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
                 <td align="right">@{"%.0f".format(tank.avgXp)}</td>
-                <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+                <td align="center">@{"%.0f".format(tank.avgWins)}%</td>
                 <td align="center">@tank.battles</td>
                 <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
             </tr>
@@ -129,25 +161,12 @@ function hideUnhide(tableId) {
 
 <br/>
 @if(tanker.get.lastWeekSession.nonEmpty) {
-<table cellpadding="0" cellspacing="0" align="center" class="user_session">
+<table cellpadding="0" cellspacing="0" align="center" class="user_session_tanks">
     <thead>
     <th onclick="hideUnhide('tanks2')" style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastWeekSession.get.wn8)">
-        <b>Session - week | WN8: @{"%.0f".format(tanker.get.lastWeekSession.get.wn8)}</b>
+        <b>Session tanks - week | WN8: @{"%.0f".format(tanker.get.lastWeekSession.get.wn8)}</b>
     </th>
     </thead>
-    <tr>
-        <td>
-            <table width="100%" style="border: 0px">
-                <tr>
-                    <td align="right">Battles:</td><td align="left">@tanker.get.lastWeekSession.get.battles</td>
-                    <td align="right">Ø Wins:</td><td align="left">@{"%.2f".format(tanker.get.lastWeekSession.get.avgWins)}</td>
-                    <td align="right">Ø Frags:</td><td align="left">@{"%.2f".format(tanker.get.lastWeekSession.get.avgFrags)}</td>
-                    <td align="right">Ø Spots:</td><td align="left">@{"%.2f".format(tanker.get.lastWeekSession.get.avgSpots)}</td>
-                    <td align="right">Ø Damage:</td><td align="left">@{"%.0f".format(tanker.get.lastWeekSession.get.avgDamage)}</td>
-                </tr>
-            </table>
-        </td>
-    </tr>
     <tr><td>
         <table cellpadding="0" cellspacing="0" align="center" id="tanks2" class="user_tanks" style="display: none">
             <thead>
@@ -171,7 +190,7 @@ function hideUnhide(tableId) {
                 <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
                 <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
                 <td align="right">@{"%.0f".format(tank.avgXp)}</td>
-                <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+                <td align="center">@{"%.0f".format(tank.avgWins)}%</td>
                 <td align="center">@tank.battles</td>
                 <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
             </tr>
@@ -182,14 +201,55 @@ function hideUnhide(tableId) {
 }
 
 <br/>
-<table cellpadding="0" cellspacing="0" align="center" class="user_session">
+@if(tanker.get.lastMonthSession.nonEmpty) {
+<table cellpadding="0" cellspacing="0" align="center" class="user_session_tanks">
     <thead>
-    <th onclick="hideUnhide('tanks3')" style="line-height: 25px; border-bottom: 0px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">
-        <b>All time | WN8: @{"%.0f".format(tanker.get.wn8)}</b>
+    <th onclick="hideUnhide('tanks3')" style="line-height: 25px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.lastMonthSession.get.wn8)">
+        <b>Session tanks - month | WN8: @{"%.0f".format(tanker.get.lastMonthSession.get.wn8)}</b>
     </th>
     </thead>
     <tr><td>
         <table cellpadding="0" cellspacing="0" align="center" id="tanks3" class="user_tanks" style="display: none">
+            <thead>
+            <th></th>
+            <th align="left" style="width: 200px">Tank&nbsp;</th>
+            <th>Tier</th>
+            <th>Ø Frags</th>
+            <th>Ø Spot</th>
+            <th>Ø Dmg</th>
+            <th>Ø Exp</th>
+            <th>% Wins</th>
+            <th>Battles</th>
+            <th>Wn8</th>
+            </thead>
+            @for(tank <- tanker.get.lastMonthSession.get.tanks) {
+            <tr>
+                <td align="center"><img src="@tank.imgPath"/></td>
+                <td align="left">@tank.name&nbsp;</td>
+                <td align="center">@tank.tier</td>
+                <td align="center">@{"%.2f".format(tank.avgFrags)}</td>
+                <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
+                <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
+                <td align="right">@{"%.0f".format(tank.avgXp)}</td>
+                <td align="center">@{"%.0f".format(tank.avgWins)}%</td>
+                <td align="center">@tank.battles</td>
+                <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
+            </tr>
+            }
+        </table>
+    </td></tr>
+</table>
+}
+
+<br/>
+<table cellpadding="0" cellspacing="0" align="center" class="user_session_tanks">
+    <thead>
+    <th onclick="hideUnhide('tanks4')" style="line-height: 25px; border-bottom: 0px" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tanker.get.wn8)">
+        <b>All time tanks | WN8: @{"%.0f".format(tanker.get.wn8)}</b>
+    </th>
+    </thead>
+    <tr><td>
+        <table cellpadding="0" cellspacing="0" align="center" id="tanks4" class="user_tanks" style="display: none">
             <thead>
             <th></th>
             <th align="left" style="width: 200px">Tank&nbsp;</th>
@@ -211,7 +271,7 @@ function hideUnhide(tableId) {
                 <td align="center">@{"%.2f".format(tank.avgSpot)}</td>
                 <td align="right" title="Expected: @tank.expDmg">@{"%.0f".format(tank.avgDmg)}</td>
                 <td align="right">@{"%.0f".format(tank.avgXp)}</td>
-                <td align="center">@{"%.2f".format(tank.avgWins)}</td>
+                <td align="center">@{"%.0f".format(tank.avgWins)}%</td>
                 <td align="center">@tank.battles</td>
                 <td align="middle" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(tank.wn8)">@{"%.0f".format(tank.wn8)}</td>
             </tr>

@@ -45,6 +45,13 @@ object UserTanksWn8 {
     } yield tanks
   }
 
+  def getTankerTanksForDayStartingFrom(accountId: Int, referenceDay: Long): Future[Seq[TankerTank]] = {
+    for {
+      day <- DB.TankerTanksDao.findDayForAccountIdStartingFrom(accountId, referenceDay)
+      tanks <- getTankerTanksForDay(accountId, day.getOrElse(0))
+    } yield tanks
+  }
+
   private def fetchTanks(accountId: Int, day: Long): List[TankerTank] = {
 
     val tanks: Map[Int, VehicleAverages] = tanksExpectedValues

@@ -66,6 +66,7 @@ object TankerTanks {
     def findLatestForAccountId(accountId: Int): Future[Seq[TankerTank]]
     def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]]
     def findPreviousDayForAccountId(accountId: Int, referenceDay: Long): Future[Option[Long]]
+    def findDayForAccountIdStartingFrom(accountId: Int, referenceDay: Long): Future[Option[Long]]
   }
 
   class TankerTanksDaoImpl(implicit val db: JdbcProfile#Backend#Database) extends TankerTanksDao {
@@ -108,9 +109,16 @@ object TankerTanks {
 
     override def findPreviousDayForAccountId(accountId: Int, referenceDay: Long): Future[Option[Long]] = {
       val q = (for {
-        previousDay <- table.filter(_.accountId === accountId).map(_.day).distinct.filter(_ <= referenceDay).sortBy(_.desc).take(2)
+        previousDay <- table.filter(_.accountId === accountId).map(_.day).distinct.filter(_ < referenceDay).sortBy(_.desc)
       } yield previousDay).result.transactionally
-      db.run(q).map(_.lastOption)
+      db.run(q).map(_.headOption)
+    }
+
+    override def findDayForAccountIdStartingFrom(accountId: Int, referenceDay: Long): Future[Option[Long]] = {
+      val q = (for {
+        nextDay <- table.filter(_.accountId === accountId).map(_.day).distinct.filter(_ >= referenceDay).sortBy(_.asc)
+      } yield nextDay).result.transactionally
+      db.run(q).map(_.headOption)
     }
 
     override def findForAccountIdAndLastDayBattle(accountId: Int, day: Long): Future[Seq[TankerTank]] = {

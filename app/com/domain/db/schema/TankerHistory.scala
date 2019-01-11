@@ -1,6 +1,8 @@
 package com.domain.db.schema
 
+import com.domain.db.DB
 import com.domain.db.DB.executionContext
+import play.api.Logger
 import slick.jdbc.JdbcProfile
 import slick.jdbc.MySQLProfile.api._
 import slick.lifted.Tag
@@ -59,14 +61,15 @@ object TankersHistory {
     }
 
     override def addOrReplaceCurrentDayBatch(tankerHistory: Seq[TankerHistory]): Future[Seq[TankerHistory]] = {
-      val q = (for {
-        _ <- table.filter(tanker => tanker.accountId.inSet(tankerHistory.map(_.accountId)) && tanker.day === tankerHistory.head.day).delete
-        _ <- table ++= tankerHistory
-      } yield()).transactionally
-      db.run(q).map(_ => tankerHistory)
+      Future.sequence(tankerHistory.groupBy(_.day).map(grouped => {
+        val (dayOfBattle, tankersHistory) = grouped
+        val q = (for {
+          _ <- table.filter(tanker => tanker.accountId.inSet(tankersHistory.map(_.accountId)) && tanker.day === dayOfBattle).delete
+          _ <- table ++= tankersHistory
+        } yield()).transactionally
+        db.run(q).map(_ => tankersHistory)
+      }).toSeq).map(_.flatten)
     }
-
   }
-
 
 }

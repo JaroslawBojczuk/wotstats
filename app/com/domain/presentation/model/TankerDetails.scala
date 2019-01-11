@@ -8,13 +8,15 @@ case class TankerDetails(name: String,
                          battles: Int,
                          wins: Int,
                          avgTier: Double,
-                         avgSpot: Double,
+                         avgSpots: Double,
                          avgFrags: Double,
+                         avgDamage: Double,
                          wn8: Double,
                          lastBattle: time.LocalDate,
                          tanks: Seq[TankStats],
                          lastDaySession: Option[TankerSession],
                          lastWeekSession: Option[TankerSession],
+                         lastMonthSession: Option[TankerSession],
                          history: Seq[UserHistoryEntry]) {
   def winratio = if (battles > 0) BigDecimal((wins.toDouble / battles.toDouble) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble else 0.0
 

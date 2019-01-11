@@ -3,9 +3,9 @@ package com.domain.user
 import java.util.concurrent.TimeUnit
 
 import com.domain.db.DB
-import com.domain.{Constants, Utils, WN8}
-import com.domain.db.schema.{TankerHistory, TankerTank}
+import com.domain.db.schema.TankerTank
 import com.domain.presentation.model.{TankStats, TankerDetails, TankerSession, UserHistoryEntry}
+import com.domain.{Constants, Utils, WN8}
 import com.fasterxml.jackson.databind.JsonNode
 import org.joda.time.LocalDate
 import play.libs.Json
@@ -78,35 +78,42 @@ object WGTankerDetails {
     val wins = tanks.map(_.wins).sum
     val spotted = tanks.map(_.spotted).sum
     val frags = tanks.map(_.frags).sum
+    val damage = tanks.map(_.damageDealt).sum
 
     val tanksUi = tanks.map(convertTanksToUi)
     val avgTier = tanksUi.map(t => t.tier * t.battles).sum.toDouble / tanksUi.map(t => if (t.tier > 0) t.battles else 0).sum.toDouble
     val avgSpot = spotted.toDouble / battles.toDouble
     val avgFrags = frags.toDouble / battles.toDouble
+    val avgDamage = damage.toDouble / battles.toDouble
 
-    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle), 1.minute)
-    val lastDaySession = if(previousDayTanks.nonEmpty) sessionStats(tanks, previousDayTanks) else None
+    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForDayStartingFrom(accountId, dayOfLastBattle - 1), 1.minute)
+    val lastDaySession = if (previousDayTanks.nonEmpty) sessionStats(tanks, previousDayTanks) else None
 
-    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle - 7), 1.minute).sortBy(-_.wn8)
-    val lastWeekSession = if(lastWeekTanks.nonEmpty) sessionStats(tanks, lastWeekTanks) else None
+    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForDayStartingFrom(accountId, dayOfLastBattle - 7), 1.minute)
+    val lastWeekSession = if (lastWeekTanks.nonEmpty) sessionStats(tanks, lastWeekTanks) else None
+
+    val lastMonthTanks = Await.result(UserTanksWn8.getTankerTanksForDayStartingFrom(accountId, dayOfLastBattle - 30), 1.minute)
+    val lastMonthSession = if (lastMonthTanks.nonEmpty) sessionStats(tanks, lastMonthTanks) else None
 
     val history: Seq[UserHistoryEntry] = Await.result(DB.TankerHistoryDao.findByAccountId(accountId), 1.minute).map(h => {
       UserHistoryEntry(new LocalDate(0).plusDays(h.day.toInt), h.wn8)
     })
 
-    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, accountWn8,
-      new LocalDate(0).plusDays(dayOfLastBattle.toInt), tanksUi, lastDaySession, lastWeekSession, history))
+    Some(TankerDetails(name, accountId, clanId, battles, wins, avgTier, avgSpot, avgFrags, avgDamage, accountWn8,
+      new LocalDate(0).plusDays(dayOfLastBattle.toInt), tanksUi, lastDaySession, lastWeekSession, lastMonthSession, history))
   }
 
   private def sessionStats(latestTanks: Seq[TankerTank], referenceTanks: Seq[TankerTank]): Option[TankerSession] = {
-    val sessionTanks = WN8.calculateWn8PerTank(latestTanks, referenceTanks).map(convertTanksToUi)
     val tanksPlayed = Utils.tankDiff(latestTanks, referenceTanks)
     val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanksPlayed)
-    val avgDamage = tanksPlayed.map(_.damageDealt).sum / battles.toDouble
-    val avgWins = BigDecimal((tanksPlayed.map(_.wins).sum / battles.toDouble) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
-    val avgSpot = tanksPlayed.map(_.spotted).sum / battles.toDouble
-    val avgFrags = tanksPlayed.map(_.frags).sum / battles.toDouble
-    if (battles > 0) Some(TankerSession(battles, wn8, avgSpot, avgFrags, avgDamage, avgWins, sessionTanks)) else None
+    if (battles > 0) {
+      val sessionTanks = WN8.calculateWn8PerTank(latestTanks, referenceTanks).map(convertTanksToUi)
+      val avgDamage = tanksPlayed.map(_.damageDealt).sum / battles.toDouble
+      val avgWins = BigDecimal((tanksPlayed.map(_.wins).sum / battles.toDouble) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
+      val avgSpot = tanksPlayed.map(_.spotted).sum / battles.toDouble
+      val avgFrags = tanksPlayed.map(_.frags).sum / battles.toDouble
+      Some(TankerSession(battles, wn8, avgSpot, avgFrags, avgDamage, avgWins, sessionTanks))
+    } else None
   }
 
 }

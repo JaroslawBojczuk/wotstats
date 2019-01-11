@@ -109,18 +109,42 @@ ul.topnav li a {
 ul.topnav li a:hover {background-color: #555;}
 ul.topnav li.icon {display: none;}
 
-table.user_session {
+table.user_session_chart {
     min-width: 940px;
-    border: 1px solid black;
+    border: 1px solid gray;
+    box-shadow: 5px 5px #888888;
+    margin-bottom: 15px;
 }
 
-table.user_session th {
+table.user_session_summary {
+    min-width: 940px;
+    border: 1px solid gray;
+    box-shadow: 5px 5px #888888;
+    margin-bottom: 15px;
+}
+
+table.user_session_summary th {
     padding-left: 10px;
-    border-bottom: 1px solid black;
     text-align: left;
 }
 
-table.user_session td {
+table.user_session_summary td {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+table.user_session_tanks {
+    min-width: 940px;
+    border: 1px solid gray;
+    box-shadow: 5px 5px #888888;
+}
+
+table.user_session_tanks th {
+    padding-left: 10px;
+    text-align: left;
+}
+
+table.user_session_tanks td {
     padding-right: 10px;
     padding-left: 10px;
 }
