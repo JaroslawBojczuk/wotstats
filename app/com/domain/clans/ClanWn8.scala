@@ -8,7 +8,7 @@ import com.domain.db.DB
 import com.domain.db.DB.executionContext
 import com.domain.db.schema.Clan
 import com.domain.presentation.model.ClanMemberDetails
-import com.domain.user.UserWn8
+import com.domain.user.{UserWn8, WGTankerDetails}
 import com.domain.user.UserWn8.UserWn8WithBattles
 import com.fasterxml.jackson.databind.JsonNode
 import io.FileOps
@@ -48,11 +48,12 @@ object ClanWn8 {
       membersList += ClanMemberDetails(
         member.findPath("account_name").asText(),
         accountId,
-        member.findPath("role_i18n").asText(), 0, 0)
+        member.findPath("role_i18n").asText(), 0, 0, "eu")
     }
+    val languages = WGTankerDetails.getUsersLanguageFromWG(membersList.map(_.accountId))
     membersList.par.map(member => {
       val wn8AndBattles: UserWn8WithBattles = Await.result(UserWn8.getAccountCachedWn8(member.accountId.toString), 1.minute)
-      member.copy(wn8 = wn8AndBattles.wn8, battles = wn8AndBattles.battles)
+      member.copy(wn8 = wn8AndBattles.wn8, battles = wn8AndBattles.battles, language = languages.getOrElse(member.accountId, "eu"))
     }).seq
   }
 

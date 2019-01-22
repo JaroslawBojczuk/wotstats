@@ -1,83 +1,55 @@
-html {
+html { 
     overflow-y: scroll;
 }
 
-table.vehicles {
-    width: 20%;
-    padding: 5px;
-    background-color:white;
-}
+a { color: black; font-weight: bold}
+a:link    {  background-color:transparent; text-decoration:none }
+a:visited {  background-color:transparent; text-decoration:none }
+a:hover   {  color: red; background-color:transparent; text-decoration:none }
+a:active  {  background-color:transparent; text-decoration:none }
 
-table.vehicles tr:hover td { background-color: black; }
-table.vehicles tr.super_unicum { background-color: #401070; }
-table.vehicles tr.unicum { background-color: #793DB6; }
-table.vehicles tr.great { background-color: #3972C6; }
-table.vehicles tr.very_good { background-color: #4099BF; }
-table.vehicles tr.good { background-color: #4D7326; }
-table.vehicles tr.above_average { background-color: #849B24; }
-table.vehicles tr.average { background-color: #CCB800; }
-table.vehicles tr.below_average { background-color: #CC7A00; }
-table.vehicles tr.bad { background-color: #CD3333; }
-table.vehicles tr.very_bad { background-color: #930D0D; }
+.super_unicum {  font-weight: bold; color: #401070; }
+.unicum {  font-weight: bold; color: #793DB6; }
+.great {  font-weight: bold; color: #3972C6; }
+.very_good {  font-weight: bold; color: #4099BF; }
+.good {  font-weight: bold; color: #4D7326; }
+.above_average {  font-weight: bold; color: #849B24; }
+.average {  font-weight: bold; color: #CCB800; }
+.below_average {  font-weight: bold; color: #CC7A00; }
+.bad {  font-weight: bold; color: #CD3333; }
+.very_bad {  font-weight: bold; color: #930D0D; }
 
-table.clan_skirmishes {
-    width: 60%;
-    padding: 5px;
-    text-align: center;
-}
-table.clan_skirmishes tr.hoverable:hover { background-color: #d1d0ce; }
-table.clan_skirmishes tr td.clan_tag { font-weight: bold; }
-table.clan_skirmishes thead tr .header { cursor: pointer; }
+.bg_super_unicum {  background-color: #401070; color: white;}
+.bg_unicum {  background-color: #793DB6; color: white;}
+.bg_great {  background-color: #3972C6; color: white;}
+.bg_very_good {  background-color: #4099BF; color: white;}
+.bg_good {  background-color: #4D7326; color: white;}
+.bg_above_average {  background-color: #849B24; color: white;}
+.bg_average {  background-color: #CCB800; color: white;}
+.bg_below_average {  background-color: #CC7A00; color: white;}
+.bg_bad {  background-color: #CD3333; color: white;}
+.bg_very_bad {  background-color: #930D0D; color: white;}
 
-
-a {color: black; font-weight: bold}
-a:link    { background-color:transparent; text-decoration:none }
-a:visited { background-color:transparent; text-decoration:none }
-a:hover   { color: red; background-color:transparent; text-decoration:none }
-a:active  { background-color:transparent; text-decoration:none }
-
-.super_unicum { font-weight: bold; color: #401070; }
-.unicum { font-weight: bold; color: #793DB6; }
-.great { font-weight: bold; color: #3972C6; }
-.very_good { font-weight: bold; color: #4099BF; }
-.good { font-weight: bold; color: #4D7326; }
-.above_average { font-weight: bold; color: #849B24; }
-.average { font-weight: bold; color: #CCB800; }
-.below_average { font-weight: bold; color: #CC7A00; }
-.bad { font-weight: bold; color: #CD3333; }
-.very_bad { font-weight: bold; color: #930D0D; }
-
-.bg_super_unicum { background-color: #401070; color: white;}
-.bg_unicum { background-color: #793DB6; color: white;}
-.bg_great { background-color: #3972C6; color: white;}
-.bg_very_good { background-color: #4099BF; color: white;}
-.bg_good { background-color: #4D7326; color: white;}
-.bg_above_average { background-color: #849B24; color: white;}
-.bg_average { background-color: #CCB800; color: white;}
-.bg_below_average { background-color: #CC7A00; color: white;}
-.bg_bad { background-color: #CD3333; color: white;}
-.bg_very_bad { background-color: #930D0D; color: white;}
-
-.bg_super_unicum:hover { background-color: white; color: black; cursor: pointer}
-.bg_unicum:hover { background-color: white; color: black; cursor: pointer}
-.bg_great:hover { background-color: white; color: black; cursor: pointer}
-.bg_very_good:hover { background-color: white; color: black; cursor: pointer}
-.bg_good:hover { background-color: white; color: black; cursor: pointer}
-.bg_above_average:hover { background-color: white; color: black; cursor: pointer}
-.bg_average:hover { background-color: white; color: black; cursor: pointer}
-.bg_below_average:hover { background-color: white; color: black; cursor: pointer}
-.bg_bad:hover { background-color: white; color: black; cursor: pointer}
-.bg_very_bad:hover { background-color: white; color: black; cursor: pointer}
+.bg_super_unicum:hover {  background-color: white; color: black; cursor: pointer}
+.bg_unicum:hover {  background-color: white; color: black; cursor: pointer}
+.bg_great:hover {  background-color: white; color: black; cursor: pointer}
+.bg_very_good:hover {  background-color: white; color: black; cursor: pointer}
+.bg_good:hover {  background-color: white; color: black; cursor: pointer}
+.bg_above_average:hover {  background-color: white; color: black; cursor: pointer}
+.bg_average:hover {  background-color: white; color: black; cursor: pointer}
+.bg_below_average:hover {  background-color: white; color: black; cursor: pointer}
+.bg_bad:hover {  background-color: white; color: black; cursor: pointer}
+.bg_very_bad:hover {  background-color: white; color: black; cursor: pointer}
 
 
-.positive { color: green }
-.negative { color: red }
+.positive {  color: green }
+.negative {  color: red }
 
-tr .headerSortDown { color: green; }
-tr .headerSortUp { color: teal; }
+tr .headerSortDown {  color: green; }
+tr .headerSortUp {  color: teal; }
 
 /* The body, gives an example how the background should look like */
-body {
+body { 
     font: 15px verdana, sans-serif; color: black;
     background: silver;
     width: 100%;
@@ -86,7 +58,7 @@ body {
     margin: 0;
 }
 
-ul.topnav {
+ul.topnav { 
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -95,8 +67,8 @@ ul.topnav {
     text-transform: uppercase;
 }
 
-ul.topnav li { float: left; }
-ul.topnav li a {
+ul.topnav li {  float: left; }
+ul.topnav li a { 
     display: inline-block;
     color: #f2f2f2;
     text-align: center;
@@ -106,84 +78,145 @@ ul.topnav li a {
     font-size: 15px;
 }
 
-ul.topnav li a:hover {background-color: #555;}
-ul.topnav li.icon {display: none;}
+ul.topnav li a:hover { background-color: #555;}
+ul.topnav li.icon { display: none;}
 
-table.user_session_chart {
+
+table.vehicles {
+    width: 20%;
+    padding: 5px;
+    background-color:white;
+}
+
+table.vehicles tr:hover td {  background-color: black; }
+table.vehicles tr.super_unicum {  background-color: #401070; }
+table.vehicles tr.unicum {  background-color: #793DB6; }
+table.vehicles tr.great {  background-color: #3972C6; }
+table.vehicles tr.very_good {  background-color: #4099BF; }
+table.vehicles tr.good {  background-color: #4D7326; }
+table.vehicles tr.above_average {  background-color: #849B24; }
+table.vehicles tr.average {  background-color: #CCB800; }
+table.vehicles tr.below_average {  background-color: #CC7A00; }
+table.vehicles tr.bad {  background-color: #CD3333; }
+table.vehicles tr.very_bad {  background-color: #930D0D; }
+
+table.clan_skirmishes {
+    width: 60%;
+    padding: 5px;
+    text-align: center;
+}
+table.clan_skirmishes tr.hoverable:hover {  background-color: #d1d0ce; }
+table.clan_skirmishes tr td.clan_tag {  font-weight: bold; }
+table.clan_skirmishes thead tr .header {  cursor: pointer; }
+
+
+table.user_session_chart { 
     min-width: 940px;
     border: 1px solid gray;
     box-shadow: 5px 5px #888888;
     margin-bottom: 15px;
 }
 
-table.user_session_summary {
+table.user_session_summary { 
     min-width: 940px;
     border: 1px solid gray;
     box-shadow: 5px 5px #888888;
     margin-bottom: 15px;
 }
 
-table.user_session_summary th {
+table.user_session_summary th { 
     padding-left: 10px;
     text-align: left;
 }
 
-table.user_session_summary td {
+table.user_session_summary td { 
     padding-right: 10px;
     padding-left: 10px;
 }
 
-table.user_session_tanks {
+table.user_session_tanks { 
     min-width: 940px;
     border: 1px solid gray;
     box-shadow: 5px 5px #888888;
 }
 
-table.user_session_tanks th {
+table.user_session_tanks th { 
     padding-left: 10px;
     text-align: left;
 }
 
-table.user_session_tanks td {
+table.user_session_tanks td { 
     padding-right: 10px;
     padding-left: 10px;
 }
 
-table.user_tanks {
+table.user_tanks { 
     min-width: 900px;
 }
 
-table.user_tanks th {
+table.user_tanks th { 
     padding: 10px;
 }
 
-table.user_tanks td {
+table.user_tanks td { 
     border-bottom: 1px solid black;
     padding-right: 10px;
     padding-left: 10px;
 }
 
-table.user_tanks tr:hover {
+table.user_tanks tr:hover { 
     background: #d1d0ce
 }
 
-table.members td {
+table.members td { 
     border-bottom: 1px solid black;
     padding: 8px;
 }
 
-table.members tr:hover {
+table.members tr:hover { 
     background: #d1d0ce
 }
 
-table.members th {
+table.members th { 
     padding: 5px;
 }
 
-div.section {
+div.section { 
     text-align: center;
     width:100%;
     background-color: grey;
     font-weight: bold;
     padding: 5px
 }
+
+/*
+.lang  { background-repeat:no-repeat;display:inline-block;height:16px;margin-right:6px;position:relative;top:2px;width:24px}
+.lang-be  { background:url(../images/lang.png) no-repeat 0 0}
+.lang-bg  { background:url(../images/lang.png) no-repeat -24px 0}
+.lang-cs  { background:url(../images/lang.png) no-repeat -48px 0}
+.lang-da  { background:url(../images/lang.png) no-repeat -72px 0}
+.lang-de  { background:url(../images/lang.png) no-repeat 0 -16px}
+.lang-el  { background:url(../images/lang.png) no-repeat -24px -16px}
+.lang-en  { background:url(../images/lang.png) no-repeat -48px -16px}
+.lang-es  { background:url(../images/lang.png) no-repeat -72px -16px}
+.lang-et  { background:url(../images/lang.png) no-repeat 0 -32px}
+.lang-fi  { background:url(../images/lang.png) no-repeat -24px -32px}
+.lang-fr  { background:url(../images/lang.png) no-repeat -48px -32px}
+.lang-hr  { background:url(../images/lang.png) no-repeat -72px -32px}
+.lang-hu  { background:url(../images/lang.png) no-repeat 0 -48px}
+.lang-it  { background:url(../images/lang.png) no-repeat -24px -48px}
+.lang-lt  { background:url(../images/lang.png) no-repeat -48px -48px}
+.lang-lv  { background:url(../images/lang.png) no-repeat -72px -48px}
+.lang-nl  { background:url(../images/lang.png) no-repeat 0 -64px}
+.lang-no  { background:url(../images/lang.png) no-repeat -24px -64px}
+.lang-pl  { background:url(../images/lang.png) no-repeat -48px -64px}
+.lang-pt  { background:url(../images/lang.png) no-repeat -72px -64px}
+.lang-ro  { background:url(../images/lang.png) no-repeat 0 -80px}
+.lang-ru  { background:url(../images/lang.png) no-repeat -24px -80px}
+.lang-sk  { background:url(../images/lang.png) no-repeat -48px -80px}
+.lang-sr  { background:url(../images/lang.png) no-repeat -72px -80px}
+.lang-sv  { background:url(../images/lang.png) no-repeat -96px 0}
+.lang-tr  { background:url(../images/lang.png) no-repeat -96px -16px}
+.lang-uk  { background:url(../images/lang.png) no-repeat -96px -32px}
+.lang-zh  { background:url(../images/lang.png) no-repeat -96px -48px}
+.flag  { display:inline-block;height:16px;margin-left:10px;width:24px}*/

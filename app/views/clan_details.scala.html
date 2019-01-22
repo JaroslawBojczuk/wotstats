@@ -1,4 +1,4 @@
-@import com.domain.wn8.ClanWn8
+@import com.domain.clans.ClanWn8
 @import org.joda.time.LocalDate
 @import org.joda.time.LocalTime
 @import java.util.Date; var prevDate: org.joda.time.LocalDate = null; var currentDate: org.joda.time.LocalDate = null; var currentTime: String = null
@@ -30,7 +30,7 @@
     </thead>
     @for(member <- clan.members) {
     <tr>
-        <td><a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td>
+        <td><span class="flag flag-@member.language" title=""></span>&nbsp;<a href="@routes.TankerDetailsController.details(member.name)">@member.name</a></td>
         <td>@member.role</td>
         <td align="right">@member.battles</td>
         <td align="center" class="bg_@com.domain.presentation.model.ColorHelper.wn8Color(member.wn8)">@{"%.2f".format(member.wn8)}</td>

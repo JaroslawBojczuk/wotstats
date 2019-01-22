@@ -16,7 +16,12 @@ import scala.util.Try
 
 object WGTankerDetails {
 
-  private def url(accountId: String) = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId"
+  private def url(accountId: String) = {
+    s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId"
+  }
+  private def accountInfoUrl(accountId: String) = {
+    s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=nickname,client_language"
+  }
 
   private val tankDetailsUrl = s"https://api.worldoftanks.eu/wot/encyclopedia/vehicles/?application_id=${Constants.APPLICATION_ID}&fields=tank_id,name,tier,images.contour_icon"
   private val tankDetails = ujson.read(requests.get(tankDetailsUrl).text).obj.get("data")
@@ -34,6 +39,20 @@ object WGTankerDetails {
     val url = s"https://api.worldoftanks.eu/wot/account/info/?application_id=${Constants.APPLICATION_ID}&account_id=$accountId&fields=last_battle_time"
     val lastBattleSecondsSince1970 = Try(ujson.read(requests.get(url).text).obj("data")(accountId.toString)("last_battle_time").num.toLong).recover { case _ => 0L }.get
     TimeUnit.SECONDS.toDays(lastBattleSecondsSince1970)
+  }
+
+  def main(args: Array[String]): Unit = {
+    println(getUsersLanguageFromWG(Seq("500557563").map(_.toInt)))
+  }
+
+  def getUsersLanguageFromWG(accountIds: Seq[Int]): Map[Int, String] = {
+    val url = accountInfoUrl(accountIds.mkString(","))
+    val accounts = ujson.read(requests.get(url).text).obj("data")
+    val flags = accountIds.map(accountId => {
+      val account = accounts(accountId.toString)
+      accountId -> account("client_language").str
+    })
+    flags.toMap
   }
 
   private def convertTanksToUi: TankerTank => TankStats = {
@@ -86,14 +105,26 @@ object WGTankerDetails {
     val avgFrags = frags.toDouble / battles.toDouble
     val avgDamage = damage.toDouble / battles.toDouble
 
-    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForDayStartingFrom(accountId, dayOfLastBattle - 1), 1.minute)
-    val lastDaySession = if (previousDayTanks.nonEmpty) sessionStats(tanks, previousDayTanks) else None
+    val previousDayTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle), 1.minute)
+    val lastDaySession = if (previousDayTanks.nonEmpty) {
+      sessionStats(tanks, previousDayTanks)
+    } else {
+      sessionStats(tanks, Await.result(UserTanksWn8.getTankerTanksForCurrentOrNextDay(accountId, dayOfLastBattle - 1), 1.minute))
+    }
 
-    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForDayStartingFrom(accountId, dayOfLastBattle - 7), 1.minute)
-    val lastWeekSession = if (lastWeekTanks.nonEmpty) sessionStats(tanks, lastWeekTanks) else None
+    val lastWeekTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle - 7), 1.minute)
+    val lastWeekSession = if (lastWeekTanks.nonEmpty) {
+      sessionStats(tanks, lastWeekTanks)
+    } else {
+      sessionStats(tanks, Await.result(UserTanksWn8.getTankerTanksForCurrentOrNextDay(accountId, dayOfLastBattle - 7), 1.minute))
+    }
 
-    val lastMonthTanks = Await.result(UserTanksWn8.getTankerTanksForDayStartingFrom(accountId, dayOfLastBattle - 30), 1.minute)
-    val lastMonthSession = if (lastMonthTanks.nonEmpty) sessionStats(tanks, lastMonthTanks) else None
+    val lastMonthTanks = Await.result(UserTanksWn8.getTankerTanksForPreviousDay(accountId, dayOfLastBattle - 30), 1.minute)
+    val lastMonthSession = if (lastMonthTanks.nonEmpty) {
+      sessionStats(tanks, lastMonthTanks)
+    } else {
+      sessionStats(tanks, Await.result(UserTanksWn8.getTankerTanksForCurrentOrNextDay(accountId, dayOfLastBattle - 30), 1.minute))
+    }
 
     val history: Seq[UserHistoryEntry] = Await.result(DB.TankerHistoryDao.findByAccountId(accountId), 1.minute).map(h => {
       UserHistoryEntry(new LocalDate(0).plusDays(h.day.toInt), h.wn8)
@@ -103,7 +134,7 @@ object WGTankerDetails {
       new LocalDate(0).plusDays(dayOfLastBattle.toInt), tanksUi, lastDaySession, lastWeekSession, lastMonthSession, history))
   }
 
-  private def sessionStats(latestTanks: Seq[TankerTank], referenceTanks: Seq[TankerTank]): Option[TankerSession] = {
+  private def sessionStats(latestTanks: Seq[TankerTank], referenceTanks: Seq[TankerTank]): TankerSession = {
     val tanksPlayed = Utils.tankDiff(latestTanks, referenceTanks)
     val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanksPlayed)
     if (battles > 0) {
@@ -112,8 +143,8 @@ object WGTankerDetails {
       val avgWins = BigDecimal((tanksPlayed.map(_.wins).sum / battles.toDouble) * 100).setScale(2, BigDecimal.RoundingMode.HALF_DOWN).toDouble
       val avgSpot = tanksPlayed.map(_.spotted).sum / battles.toDouble
       val avgFrags = tanksPlayed.map(_.frags).sum / battles.toDouble
-      Some(TankerSession(battles, wn8, avgSpot, avgFrags, avgDamage, avgWins, sessionTanks))
-    } else None
+      TankerSession(battles, wn8, avgSpot, avgFrags, avgDamage, avgWins, sessionTanks)
+    } else TankerSession.empty
   }
 
 }

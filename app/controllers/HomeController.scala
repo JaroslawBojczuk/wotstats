@@ -40,7 +40,7 @@ class HomeController @Inject() extends Controller {
 
   private val taskSupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(10))
 
-  def refreshUsers: Action[AnyContent] = Action.async { implicit request =>
+  private def refreshDatabaseUsers() = {
     DB.TankersDao.getAll.map((users: Seq[Int]) => {
       Logger.debug(s"Users to refresh: ${users.size}")
       users.grouped(100).foreach(u => {
@@ -50,14 +50,22 @@ class HomeController @Inject() extends Controller {
           Logger.debug(s"[$accountId] Refreshing data for user")
           val tanks = UserTanksWn8.getTankerTanksForHisLastDay(accountId)
           val (wn8, battles) = WN8.calculateTotalWn8AndBattles(tanks)
-          (TankerHistory(accountId, battles, wn8, tanks.map(_.day).headOption.getOrElse(0L)), tanks)
+          val history = TankerHistory(accountId, battles, wn8, tanks.map(_.day).headOption.getOrElse(0L))
+          (history, tanks)
         }).seq.unzip
+        val tankers = tankersHistory.map(tanker => {
+          Tanker(tanker.accountId, tanker.battles, tanker.wn8)
+        })
         Logger.debug(s"Inserting into database")
         DB.TankerHistoryDao.addOrReplaceCurrentDayBatch(tankersHistory)
-        DB.TankersDao.addOrUpdate(tankersHistory.map(tanker => Tanker(tanker.accountId, tanker.battles, tanker.wn8)))
+        DB.TankersDao.addOrUpdate(tankers)
         DB.TankerTanksDao.addOrReplaceInBatch(tanks.flatten)
       })
-    }).map(_ => {
+    })
+  }
+
+  def refreshUsers: Action[AnyContent] = Action.async { implicit request =>
+    refreshDatabaseUsers().map(_ => {
       Ok(views.html.success())
     })
   }
